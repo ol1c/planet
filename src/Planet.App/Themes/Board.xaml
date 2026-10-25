@@ -1,0 +1,136 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+                    xmlns:controls="clr-namespace:Planet.App.Controls"
+                    xmlns:vm="clr-namespace:Planet.App.ViewModels">
+
+    <sys:Double x:Key="CellSize">24</sys:Double>
+
+    <Geometry x:Key="PlantGeometry">M12,2 C20,6 21,15 12,22 C3,15 4,6 12,2 Z M12,7 L12,19</Geometry>
+
+    <GeometryGroup x:Key="AnimalGeometry">
+        <EllipseGeometry Center="12,14" RadiusX="7.5" RadiusY="6.5" />
+        <EllipseGeometry Center="6.5,7" RadiusX="2.8" RadiusY="2.8" />
+        <EllipseGeometry Center="17.5,7" RadiusX="2.8" RadiusY="2.8" />
+    </GeometryGroup>
+
+    <Style TargetType="controls:WorldBitmapView">
+        <Setter Property="EmptyBrush" Value="{StaticResource EmptyCellBrush}" />
+        <Setter Property="PlantBrush" Value="{StaticResource PlantBrush}" />
+        <Setter Property="AnimalBrush" Value="{StaticResource AnimalBrush}" />
+        <Setter Property="AnimalOnPlantBrush" Value="{StaticResource AnimalOnPlantBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource PanelBorderBrush}" />
+        <Setter Property="ViewportBrush" Value="{StaticResource ViewportBrush}" />
+        <Setter Property="GridBrush" Value="{StaticResource GridLineBrush}" />
+        <Setter Property="MarkerBrush" Value="{StaticResource HighlightBrush}" />
+        <Setter Property="Cursor" Value="Cross" />
+    </Style>
+
+    <Style x:Key="CellButtonStyle" TargetType="Button">
+        <Setter Property="Width" Value="{StaticResource CellSize}" />
+        <Setter Property="Height" Value="{StaticResource CellSize}" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Root" Background="{StaticResource EmptyCellBrush}"
+                            BorderBrush="{StaticResource CellBorderBrush}" BorderThickness="0.5">
+                        <Grid>
+                            <Path x:Name="Plant" Data="{StaticResource PlantGeometry}" Fill="{StaticResource PlantBrush}"
+                                  Stroke="{StaticResource EmptyCellBrush}" StrokeThickness="1"
+                                  Stretch="Uniform" Margin="3" Visibility="Collapsed" />
+                            <Path x:Name="Animal" Data="{StaticResource AnimalGeometry}" Fill="{StaticResource AnimalBrush}"
+                                  Stretch="Uniform" Margin="3" Visibility="Collapsed" RenderTransformOrigin="0.5,0.5">
+                                <Path.RenderTransform>
+                                    <ScaleTransform ScaleX="1" ScaleY="1" />
+                                </Path.RenderTransform>
+                            </Path>
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <DataTrigger Binding="{Binding HasPlant}" Value="True">
+                            <Setter TargetName="Plant" Property="Visibility" Value="Visible" />
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard FillBehavior="Stop">
+                                        <DoubleAnimation Storyboard.TargetName="Plant" Storyboard.TargetProperty="Opacity"
+                                                         From="0" To="1" Duration="0:0:0.25" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.EnterActions>
+                        </DataTrigger>
+
+                        <DataTrigger Binding="{Binding HasAnimal}" Value="True">
+                            <Setter TargetName="Animal" Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding HasAnimal}" Value="True" />
+                                <Condition Binding="{Binding HasPlant}" Value="True" />
+                            </MultiDataTrigger.Conditions>
+                            <Setter TargetName="Animal" Property="Fill" Value="{StaticResource AnimalOnPlantBrush}" />
+                            <Setter TargetName="Plant" Property="Opacity" Value="0.45" />
+                        </MultiDataTrigger>
+
+                        <DataTrigger Binding="{Binding IsNewborn}" Value="True">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard FillBehavior="Stop">
+                                        <DoubleAnimation Storyboard.TargetName="Animal"
+                                                         Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                         From="0.1" To="1" Duration="0:0:0.35">
+                                            <DoubleAnimation.EasingFunction>
+                                                <BackEase EasingMode="EaseOut" Amplitude="0.6" />
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <DoubleAnimation Storyboard.TargetName="Animal"
+                                                         Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                         From="0.1" To="1" Duration="0:0:0.35">
+                                            <DoubleAnimation.EasingFunction>
+                                                <BackEase EasingMode="EaseOut" Amplitude="0.6" />
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.EnterActions>
+                        </DataTrigger>
+
+                        <DataTrigger Binding="{Binding IsTracked}" Value="True">
+                            <Setter TargetName="Root" Property="BorderBrush" Value="{StaticResource HighlightBrush}" />
+                            <Setter TargetName="Root" Property="BorderThickness" Value="2.5" />
+                        </DataTrigger>
+
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsMouseOver" Value="True" />
+                                <Condition Property="IsEnabled" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="Root" Property="BorderBrush" Value="{StaticResource CellHoverBrush}" />
+                            <Setter TargetName="Root" Property="BorderThickness" Value="2" />
+                            <Setter Property="Cursor" Value="Hand" />
+                        </MultiTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <DataTemplate x:Key="CellTemplate" DataType="{x:Type vm:CellViewModel}">
+        <Button Style="{StaticResource CellButtonStyle}"
+                Command="{Binding EditCommand}" CommandParameter="{Binding}">
+            <Button.InputBindings>
+                <MouseBinding Gesture="RightClick" Command="{Binding EraseCommand}" CommandParameter="{Binding}" />
+            </Button.InputBindings>
+            <Button.ToolTip>
+                <ToolTip>
+                    <TextBlock>
+                        <Run Text="{Binding X, Mode=OneWay}" />,<Run Text="{Binding Y, Mode=OneWay}" />
+                        <Run Text="{Binding Description, Mode=OneWay}" />
+                    </TextBlock>
+                </ToolTip>
+            </Button.ToolTip>
+        </Button>
+    </DataTemplate>
+
+</ResourceDictionary>

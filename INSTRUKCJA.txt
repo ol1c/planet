@@ -1,0 +1,64 @@
+Poniżej tłumaczę tę instrukcję po kolei. To zadanie projektowe (WPF, C#) z przedmiotu o programowaniu aplikacji okienkowych: masz napisać symulator ekosystemu oparty na automacie komórkowym.
+
+1. Główny pomysł
+
+Masz kwadratową planszę (siatkę pól). Każde pole może zawierać:
+
+roślinę (albo nie),
+zwierzę (albo nie), maksymalnie jedno.
+
+Czyli na jednym polu mogą być jednocześnie roślina i zwierzę, ale nie dwa zwierzęta.
+
+Co krok symulacji wszystkie pola są aktualizowane naraz według reguł, tak jak w grze Life Conwaya. Dodatkowo zwierzęta mogą się poruszać, czego w klasycznym Life nie ma.
+
+2. Parametry ekosystemu
+
+Ekosystem ma 7 parametrów. Pięć to zbiory liczb (wektory), dwa to pojedyncze liczby:
+
+Parametr	Typ	Znaczenie
+R	zbiór	ile sąsiadnich roślin powoduje powstanie nowej rośliny na pustym polu
+W	zbiór	przy ilu sąsiednich roślinach istniejąca roślina przeżywa
+B	zbiór	przy ilu sąsiednich zwierzętach rodzi się nowe zwierzę
+P	zbiór	ile roślin musi być w sąsiedztwie, by zwierzę mogło się urodzić
+Z	zbiór	przy ilu sąsiednich zwierzętach zwierzę przeżywa
+M	liczba	zasięg ruchu zwierzęcia (o ile pól może przeskoczyć)
+L	liczba	ile kroków (“lat”) żyje zwierzę
+
+Sąsiedztwo to zwykle 8 pól wokół (Moore’a), tak jak w Life.
+
+3. Reguły po kolei
+
+Rośliny (jak Life, wariant “R123/W123456”):
+
+Na pustym polu (bez rośliny i zwierzęcia) powstaje roślina, jeśli sąsiaduje z 1, 2, 3 lub 4 roślinami (R = {1,2,3,4}).
+Istniejąca roślina przeżywa, jeśli ma 1 do 6 sąsiadów-roślin (W = {1,2,3,4,5,6}). Inaczej ginie (z przeludnienia lub samotności).
+
+Zwierzęta:
+
+Wiek: zwierzę żyje L kroków, potem umiera.
+Jedzenie: jeśli stoi na polu z rośliną, zjada ją (roślina znika).
+Ruch: jeśli zwierzę nie stoi na roślinie (jest głodne), to:
+idzie na sąsiednie pole z rośliną, albo
+skacze do M pól w kierunku sąsiedniej rośliny, albo
+rusza się losowo.
+Nie może wejść na pole zajęte przez inne zwierzę.
+Narodziny: na polu rodzi się nowe zwierzę, jeśli ma w sąsiedztwie B zwierząt (np. B = {2,3}) oraz P roślin (P = 0 lub 1, czyli zero albo jedna roślina w sąsiedztwie).
+Przeżycie: zwierzę przeżywa, jeśli ma w sąsiedztwie Z zwierząt (Z = {0,1,2,3}). Przy 4 i więcej umiera z tłoku.
+4. Co aplikacja musi umieć (wymagania obowiązkowe)
+Rozmiar planszy min. 50x50, ustawiany przez użytkownika.
+Tryb edycji: klikasz pola i ręcznie stawiasz rośliny/zwierzęta.
+Czyszczenie planszy i losowanie nowego stanu.
+Pojedynczy krok oraz ciągła animacja z regulacją prędkości (suwak). Po zatrzymaniu wracasz do edycji.
+Zapis/odczyt do pliku tekstowego: plansza oraz reguły (R, W, B, P, Z, M, L).
+Statystyki: liczba roślin, zwierząt, narodzin, śmierci.
+Dwupoziomowy zoom: np. widok całości i widok powiększony (fragment planszy). Plansza cały czas “żyje”, nawet gdy widzisz tylko fragment.
+Łatwa zmiana wyglądu w kodzie: np. kolory i kształty trzymane w stylach/szablonach/zasobach XAML, nie wpisane na sztywno.
+5. Elementy WPF, które masz pokazać
+
+Prowadzący chce zobaczyć, że znasz typowe mechanizmy WPF:
+
+Style (np. wygląd przycisków, komórek),
+Szablony (ControlTemplate, DataTemplate, np. szablon komórki planszy),
+Triggery (np. zmiana wyglądu po najechaniu myszą, DataTrigger zależny od stanu komórki),
+Animacje (Storyboard, np. pojawianie się nowego zwierzęcia),
+do tego prawdopodobnie: binding, MVVM, komendy.

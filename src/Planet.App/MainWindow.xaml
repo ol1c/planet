@@ -1,0 +1,518 @@
+﻿<Window x:Class="Planet.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="clr-namespace:Planet.App.Controls"
+        xmlns:vm="clr-namespace:Planet.App.ViewModels"
+        xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
+        Title="Planet - symulator ekosystemu"
+        Width="1360" Height="900" MinWidth="1000" MinHeight="660"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource WindowBackgroundBrush}"
+        Foreground="{StaticResource TextBrush}">
+
+    <Window.InputBindings>
+        <KeyBinding Key="F5" Command="{Binding ToggleRunCommand}" />
+        <KeyBinding Key="F6" Command="{Binding StepCommand}" />
+        <KeyBinding Key="N" Modifiers="Control" Command="{Binding NewBoardCommand}" />
+        <KeyBinding Key="O" Modifiers="Control" Command="{Binding OpenCommand}" />
+        <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveCommand}" />
+        <KeyBinding Key="E" Modifiers="Control" Command="{Binding ExportImageCommand}" />
+        <KeyBinding Key="R" Modifiers="Control" Command="{Binding ToggleRecordingCommand}" />
+        <KeyBinding Key="D1" Modifiers="Control" Command="{Binding ShowWholeBoardCommand}" />
+        <KeyBinding Key="D2" Modifiers="Control" Command="{Binding ZoomPresetCommand}">
+            <KeyBinding.CommandParameter><sys:Int32>20</sys:Int32></KeyBinding.CommandParameter>
+        </KeyBinding>
+        <KeyBinding Key="OemPlus" Modifiers="Control" Command="{Binding ZoomInCommand}" />
+        <KeyBinding Key="Add" Modifiers="Control" Command="{Binding ZoomInCommand}" />
+        <KeyBinding Key="OemMinus" Modifiers="Control" Command="{Binding ZoomOutCommand}" />
+        <KeyBinding Key="Subtract" Modifiers="Control" Command="{Binding ZoomOutCommand}" />
+    </Window.InputBindings>
+
+    <Window.Resources>
+        <Style x:Key="BitmapLevelStyle" TargetType="FrameworkElement">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsDetailed}" Value="True">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="DetailLevelStyle" TargetType="FrameworkElement">
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsDetailed}" Value="True">
+                    <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="PanScrollBarStyle" TargetType="ScrollBar">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsWholeBoard}" Value="True">
+                    <Setter Property="Visibility" Value="Hidden" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <DataTemplate x:Key="BirthTemplate" DataType="{x:Type vm:BirthRecordViewModel}">
+            <StackPanel Orientation="Horizontal" Margin="0,2">
+                <Border BorderBrush="{StaticResource PanelBorderBrush}" BorderThickness="1" Margin="0,0,8,0">
+                    <Image Source="{Binding Thumbnail}" Width="54" Height="54" RenderOptions.BitmapScalingMode="NearestNeighbor" />
+                </Border>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding Details}" Foreground="{StaticResource MutedTextBrush}" />
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+    </Window.Resources>
+
+    <DockPanel>
+        <Menu DockPanel.Dock="Top" Padding="4,2" Background="{StaticResource PanelBackgroundBrush}">
+            <MenuItem Header="_Plik">
+                <MenuItem Header="_Nowa plansza" Command="{Binding NewBoardCommand}" InputGestureText="Ctrl+N" />
+                <MenuItem Header="_Otwórz…" Command="{Binding OpenCommand}" InputGestureText="Ctrl+O" />
+                <MenuItem Header="_Zapisz…" Command="{Binding SaveCommand}" InputGestureText="Ctrl+S" />
+                <Separator />
+                <MenuItem Header="Zapisz _obraz (PNG)…" Command="{Binding ExportImageCommand}" InputGestureText="Ctrl+E" />
+                <MenuItem Header="Nag_rywanie (GIF / PNG)" Command="{Binding ToggleRecordingCommand}" InputGestureText="Ctrl+R" />
+                <Separator />
+                <MenuItem Header="Za_kończ" Click="OnExitClick" />
+            </MenuItem>
+            <MenuItem Header="_Symulacja">
+                <MenuItem Header="Start / Stop" Command="{Binding ToggleRunCommand}" InputGestureText="F5" />
+                <MenuItem Header="Jeden _krok" Command="{Binding StepCommand}" InputGestureText="F6" />
+                <Separator />
+                <MenuItem Header="_Wyczyść planszę" Command="{Binding ClearCommand}" />
+                <MenuItem Header="_Losuj stan" Command="{Binding RandomizeCommand}" />
+                <MenuItem Header="_Domyślne reguły" Command="{Binding ResetRulesCommand}" />
+            </MenuItem>
+            <MenuItem Header="_Widok">
+                <MenuItem Header="_Cała plansza" Command="{Binding ShowWholeBoardCommand}" InputGestureText="Ctrl+1" />
+                <MenuItem Header="_Powiększenie 20x20" Command="{Binding ZoomPresetCommand}" InputGestureText="Ctrl+2">
+                    <MenuItem.CommandParameter><sys:Int32>20</sys:Int32></MenuItem.CommandParameter>
+                </MenuItem>
+                <MenuItem Header="Przybliż" Command="{Binding ZoomInCommand}" InputGestureText="Ctrl++" />
+                <MenuItem Header="Oddal" Command="{Binding ZoomOutCommand}" InputGestureText="Ctrl+-" />
+            </MenuItem>
+        </Menu>
+
+        <StatusBar DockPanel.Dock="Bottom" Background="{StaticResource PanelBackgroundBrush}" Padding="8,2">
+            <StatusBarItem>
+                <StackPanel Orientation="Horizontal">
+                    <Ellipse Style="{StaticResource RunIndicatorStyle}" Margin="0,0,8,0" />
+                    <TextBlock Text="{Binding StatusMessage}" TextTrimming="CharacterEllipsis" MaxWidth="640" />
+                </StackPanel>
+            </StatusBarItem>
+            <StatusBarItem HorizontalAlignment="Right">
+                <TextBlock Foreground="{StaticResource MutedTextBrush}">
+                    <Run Text="Plansza" /> <Run Text="{Binding BoardSize, Mode=OneWay}" />x<Run Text="{Binding BoardSize, Mode=OneWay}" />
+                    <Run Text="  ·  krok" /> <Run Text="{Binding Statistics.Generation, Mode=OneWay}" />
+                    <Run Text="  ·  rośliny" /> <Run Text="{Binding Statistics.Plants, Mode=OneWay}" />
+                    <Run Text="  ·  zwierzęta" /> <Run Text="{Binding Statistics.Animals, Mode=OneWay}" />
+                    <Run Text="  ·  " /><Run Text="{Binding Rules.RuleString, Mode=OneWay}" />
+                </TextBlock>
+            </StatusBarItem>
+        </StatusBar>
+
+        <Grid DockPanel.Dock="Right" Width="370" Margin="0,10,10,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Border Style="{StaticResource SectionStyle}" Padding="10,8,10,10">
+                <StackPanel>
+                    <TextBlock Text="Minimapa - kliknij, aby przenieść widok" Foreground="{StaticResource MutedTextBrush}" Margin="0,0,0,6" />
+                    <controls:WorldBitmapView Height="170" GridBrush="{x:Null}"
+                                              World="{Binding World}" RenderVersion="{Binding RenderVersion}"
+                                              ShowViewport="True"
+                                              ViewportX="{Binding ViewportX}" ViewportY="{Binding ViewportY}"
+                                              ViewportSize="{Binding ZoomSize}"
+                                              MarkerX="{Binding MarkerX}" MarkerY="{Binding MarkerY}"
+                                              CellCommand="{Binding CenterViewportCommand}" />
+                </StackPanel>
+            </Border>
+
+            <TabControl Grid.Row="1">
+                <TabItem Header="Symulacja">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <Border Style="{StaticResource SectionStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Symulacja" Style="{StaticResource SectionHeaderStyle}" />
+                                    <WrapPanel>
+                                        <Button Style="{StaticResource RunButtonStyle}" Command="{Binding ToggleRunCommand}" MinWidth="96" />
+                                        <Button Content="Krok" Command="{Binding StepCommand}" ToolTip="Jeden krok symulacji (F6)" />
+                                    </WrapPanel>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="110" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="56" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                        </Grid.RowDefinitions>
+                                        <TextBlock Text="Prędkość" Style="{StaticResource LabelStyle}" />
+                                        <Slider Grid.Column="1" Minimum="1" Maximum="60" Value="{Binding StepsPerSecond}"
+                                                TickFrequency="1" IsSnapToTickEnabled="True" />
+                                        <TextBlock Grid.Column="2" Style="{StaticResource ValueStyle}" VerticalAlignment="Center">
+                                            <Run Text="{Binding StepsPerSecond, Mode=OneWay}" /> kl/s
+                                        </TextBlock>
+                                        <TextBlock Grid.Row="1" Text="Kroków na klatkę" Style="{StaticResource LabelStyle}"
+                                                   ToolTip="Ile kroków liczyć między odświeżeniami widoku - przyspiesza duże plansze" />
+                                        <Slider Grid.Row="1" Grid.Column="1" Minimum="1" Maximum="50" Value="{Binding StepsPerTick}"
+                                                TickFrequency="1" IsSnapToTickEnabled="True" />
+                                        <TextBlock Grid.Row="1" Grid.Column="2" Style="{StaticResource ValueStyle}" VerticalAlignment="Center"
+                                                   Text="{Binding StepsPerTick}" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource SectionStyle}" IsEnabled="{Binding IsEditing}">
+                                <StackPanel>
+                                    <TextBlock Text="Edycja" Style="{StaticResource SectionHeaderStyle}" />
+                                    <TextBlock Text="LPM - postaw, PPM - usuń. W widoku bitmapowym można malować przeciągając."
+                                               TextWrapping="Wrap" Foreground="{StaticResource MutedTextBrush}" Margin="0,0,0,8" />
+                                    <WrapPanel>
+                                        <RadioButton Style="{StaticResource SegmentRadioStyle}" GroupName="Tool" Content="Roślina"
+                                                     IsChecked="{Binding Tool, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Plant}" />
+                                        <RadioButton Style="{StaticResource SegmentRadioStyle}" GroupName="Tool" Content="Zwierzę"
+                                                     IsChecked="{Binding Tool, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Animal}" />
+                                        <RadioButton Style="{StaticResource SegmentRadioStyle}" GroupName="Tool" Content="Gumka"
+                                                     IsChecked="{Binding Tool, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Erase}" />
+                                    </WrapPanel>
+                                    <Grid Margin="0,4,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="44" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                        </Grid.RowDefinitions>
+                                        <TextBlock Text="Rośliny" Style="{StaticResource LabelStyle}" />
+                                        <Slider Grid.Column="1" Minimum="0" Maximum="100" TickFrequency="1" IsSnapToTickEnabled="True"
+                                                Value="{Binding PlantDensity, Converter={StaticResource PercentConverter}}" />
+                                        <TextBlock Grid.Column="2" Style="{StaticResource ValueStyle}" Text="{Binding PlantDensity, StringFormat=P0}" />
+                                        <TextBlock Grid.Row="1" Text="Zwierzęta" Style="{StaticResource LabelStyle}" />
+                                        <Slider Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="100" TickFrequency="1" IsSnapToTickEnabled="True"
+                                                Value="{Binding AnimalDensity, Converter={StaticResource PercentConverter}}" />
+                                        <TextBlock Grid.Row="1" Grid.Column="2" Style="{StaticResource ValueStyle}" Text="{Binding AnimalDensity, StringFormat=P0}" />
+                                    </Grid>
+                                    <WrapPanel>
+                                        <Button Content="Losuj" Command="{Binding RandomizeCommand}" ToolTip="Wylosuj stan z podaną gęstością" />
+                                        <Button Content="Wyczyść" Command="{Binding ClearCommand}" />
+                                    </WrapPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource SectionStyle}" IsEnabled="{Binding IsEditing}">
+                                <StackPanel>
+                                    <TextBlock Text="Plansza" Style="{StaticResource SectionHeaderStyle}" />
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="64" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Rozmiar" Style="{StaticResource LabelStyle}" />
+                                        <TextBox Grid.Column="1" Text="{Binding NewBoardSize, UpdateSourceTrigger=PropertyChanged}" />
+                                        <Button Grid.Column="2" Content="Nowa plansza" Command="{Binding NewBoardCommand}" HorizontalAlignment="Left" />
+                                    </Grid>
+                                    <TextBlock Foreground="{StaticResource MutedTextBrush}" Margin="0,0,0,4">
+                                        <Run Text="Dozwolony bok: 50-" /><Run Text="{Binding MaxAllowedBoardSize, Mode=OneWay}" /><Run Text=" pól" />
+                                    </TextBlock>
+                                    <CheckBox Content="Tryb wielkich ekosystemów (do 1000x1000)" IsChecked="{Binding IsLargeMode}"
+                                              ToolTip="Pozwala tworzyć plansze większe niż 300x300. Przy dużych planszach zwiększ też „Kroków na klatkę”." />
+                                    <CheckBox Content="Zawijanie krawędzi (torus)" IsChecked="{Binding Wraps}" />
+                                    <WrapPanel>
+                                        <Button Content="Otwórz…" Command="{Binding OpenCommand}" />
+                                        <Button Content="Zapisz…" Command="{Binding SaveCommand}" />
+                                    </WrapPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <TabItem Header="Reguły">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <Border Style="{StaticResource SectionStyle}" DataContext="{Binding Rules}">
+                            <StackPanel>
+                                <TextBlock Text="Reguły ekosystemu" Style="{StaticResource SectionHeaderStyle}" />
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="24" />
+                                        <ColumnDefinition Width="80" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition />
+                                        <RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition />
+                                        <RowDefinition /><RowDefinition /><RowDefinition />
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0" Text="R" Style="{StaticResource ValueStyle}" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                                    <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding PlantBirth, UpdateSourceTrigger=PropertyChanged}" />
+                                    <TextBlock Grid.Row="0" Grid.Column="2" Text="roślin: nowa roślina" Style="{StaticResource LabelStyle}" />
+
+                                    <TextBlock Grid.Row="1" Text="W" Style="{StaticResource ValueStyle}" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding PlantSurvival, UpdateSourceTrigger=PropertyChanged}" />
+                                    <TextBlock Grid.Row="1" Grid.Column="2" Text="roślin: roślina przeżywa" Style="{StaticResource LabelStyle}" />
+
+                                    <TextBlock Grid.Row="2" Text="B" Style="{StaticResource ValueStyle}" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                                    <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding AnimalBirth, UpdateSourceTrigger=PropertyChanged}" />
+                                    <TextBlock Grid.Row="2" Grid.Column="2" Text="zwierząt: narodziny" Style="{StaticResource LabelStyle}" />
+
+                                    <TextBlock Grid.Row="3" Text="P" Style="{StaticResource ValueStyle}" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                                    <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding AnimalBirthPlants, UpdateSourceTrigger=PropertyChanged}" />
+                                    <TextBlock Grid.Row="3" Grid.Column="2" Text="roślin przy narodzinach" Style="{StaticResource LabelStyle}" />
+
+                                    <TextBlock Grid.Row="4" Text="Z" Style="{StaticResource ValueStyle}" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                                    <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding AnimalSurvival, UpdateSourceTrigger=PropertyChanged}" />
+                                    <TextBlock Grid.Row="4" Grid.Column="2" Text="sąsiednich zwierząt: przeżywa" Style="{StaticResource LabelStyle}" />
+
+                                    <TextBlock Grid.Row="5" Text="M" Style="{StaticResource ValueStyle}" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                                    <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding MoveRange, UpdateSourceTrigger=PropertyChanged}" />
+                                    <TextBlock Grid.Row="5" Grid.Column="2" Text="zasięg skoku (pola)" Style="{StaticResource LabelStyle}" />
+
+                                    <TextBlock Grid.Row="6" Text="L" Style="{StaticResource ValueStyle}" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                                    <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding Lifespan, UpdateSourceTrigger=PropertyChanged}" />
+                                    <TextBlock Grid.Row="6" Grid.Column="2" Text="długość życia (kroki)" Style="{StaticResource LabelStyle}" />
+
+                                    <TextBlock Grid.Row="7" Grid.ColumnSpan="3" Text="Historia zwierząt (0 = wyłączone)"
+                                               Style="{StaticResource SectionHeaderStyle}" Margin="0,10,0,6" />
+
+                                    <TextBlock Grid.Row="8" Text="S" Style="{StaticResource ValueStyle}" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                                    <TextBox Grid.Row="8" Grid.Column="1" Text="{Binding CompanyTime, UpdateSourceTrigger=PropertyChanged}" />
+                                    <TextBlock Grid.Row="8" Grid.Column="2" Text="kroków po posiłku szuka zwierząt" Style="{StaticResource LabelStyle}" TextWrapping="Wrap" />
+
+                                    <TextBlock Grid.Row="9" Text="D" Style="{StaticResource ValueStyle}" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                                    <TextBox Grid.Row="9" Grid.Column="1" Text="{Binding MaturityAge, UpdateSourceTrigger=PropertyChanged}" />
+                                    <TextBlock Grid.Row="9" Grid.Column="2" Text="wiek, od którego się rozmnaża" Style="{StaticResource LabelStyle}" TextWrapping="Wrap" />
+
+                                    <TextBlock Grid.Row="10" Text="H" Style="{StaticResource ValueStyle}" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                                    <TextBox Grid.Row="10" Grid.Column="1" Text="{Binding StarvationTime, UpdateSourceTrigger=PropertyChanged}" />
+                                    <TextBlock Grid.Row="10" Grid.Column="2" Text="kroków bez jedzenia: śmierć" Style="{StaticResource LabelStyle}" TextWrapping="Wrap" />
+                                </Grid>
+                                <TextBlock Text="{Binding RuleString}" FontFamily="Consolas" Foreground="{StaticResource MutedTextBrush}"
+                                           Margin="0,6,0,8" TextWrapping="Wrap" />
+                                <Button Content="Przywróć domyślne" HorizontalAlignment="Left"
+                                        Command="{Binding DataContext.ResetRulesCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            </StackPanel>
+                        </Border>
+                    </ScrollViewer>
+                </TabItem>
+
+                <TabItem Header="Statystyki">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <Border Style="{StaticResource SectionStyle}" DataContext="{Binding Statistics}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="70" />
+                                    <ColumnDefinition Width="80" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition />
+                                    <RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition />
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Text="Krok" Style="{StaticResource LabelStyle}" />
+                                <TextBlock Grid.Column="2" Text="{Binding Generation}" Style="{StaticResource ValueStyle}" />
+                                <TextBlock Grid.Row="1" Text="Rośliny" Style="{StaticResource LabelStyle}" />
+                                <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding Plants}" Style="{StaticResource ValueStyle}" Foreground="{StaticResource PlantBrush}" />
+                                <TextBlock Grid.Row="2" Text="Zwierzęta" Style="{StaticResource LabelStyle}" />
+                                <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding Animals}" Style="{StaticResource ValueStyle}" Foreground="{StaticResource AnimalBrush}" />
+
+                                <TextBlock Grid.Row="3" Grid.Column="1" Text="ost. krok" Style="{StaticResource LabelStyle}" HorizontalAlignment="Right" Margin="0,8,4,4" />
+                                <TextBlock Grid.Row="3" Grid.Column="2" Text="łącznie" Style="{StaticResource LabelStyle}" HorizontalAlignment="Right" Margin="0,8,4,4" />
+
+                                <TextBlock Grid.Row="4" Text="Narodziny zwierząt" Style="{StaticResource LabelStyle}" />
+                                <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding LastStep.AnimalBirths}" Style="{StaticResource ValueStyle}" />
+                                <TextBlock Grid.Row="4" Grid.Column="2" Text="{Binding TotalAnimalBirths}" Style="{StaticResource ValueStyle}" />
+
+                                <TextBlock Grid.Row="5" Text="Śmierci zwierząt" Style="{StaticResource LabelStyle}" />
+                                <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding LastStep.AnimalDeaths}" Style="{StaticResource ValueStyle}" />
+                                <TextBlock Grid.Row="5" Grid.Column="2" Text="{Binding TotalAnimalDeaths}" Style="{StaticResource ValueStyle}" />
+
+                                <TextBlock Grid.Row="6" Text="   - ze starości (L)" Style="{StaticResource LabelStyle}" />
+                                <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding LastStep.AnimalDeathsOfAge}" Style="{StaticResource ValueStyle}" FontWeight="Normal" />
+                                <TextBlock Grid.Row="6" Grid.Column="2" Text="{Binding TotalAnimalDeathsOfAge}" Style="{StaticResource ValueStyle}" FontWeight="Normal" />
+
+                                <TextBlock Grid.Row="7" Text="   - z tłoku (Z)" Style="{StaticResource LabelStyle}" />
+                                <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding LastStep.AnimalDeathsOfCrowding}" Style="{StaticResource ValueStyle}" FontWeight="Normal" />
+                                <TextBlock Grid.Row="7" Grid.Column="2" Text="{Binding TotalAnimalDeathsOfCrowding}" Style="{StaticResource ValueStyle}" FontWeight="Normal" />
+
+                                <TextBlock Grid.Row="8" Text="   - z głodu (H)" Style="{StaticResource LabelStyle}" />
+                                <TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding LastStep.AnimalDeathsOfHunger}" Style="{StaticResource ValueStyle}" FontWeight="Normal" />
+                                <TextBlock Grid.Row="8" Grid.Column="2" Text="{Binding TotalAnimalDeathsOfHunger}" Style="{StaticResource ValueStyle}" FontWeight="Normal" />
+
+                                <TextBlock Grid.Row="9" Text="Nowe / obumarłe rośliny" Style="{StaticResource LabelStyle}" />
+                                <TextBlock Grid.Row="9" Grid.Column="1" Style="{StaticResource ValueStyle}">
+                                    <Run Text="{Binding LastStep.PlantBirths, Mode=OneWay}" />/<Run Text="{Binding LastStep.PlantDeaths, Mode=OneWay}" />
+                                </TextBlock>
+                                <TextBlock Grid.Row="9" Grid.Column="2" Style="{StaticResource ValueStyle}">
+                                    <Run Text="{Binding TotalPlantBirths, Mode=OneWay}" />/<Run Text="{Binding TotalPlantDeaths, Mode=OneWay}" />
+                                </TextBlock>
+
+                                <TextBlock Grid.Row="10" Text="Zjedzone rośliny" Style="{StaticResource LabelStyle}" />
+                                <TextBlock Grid.Row="10" Grid.Column="1" Text="{Binding LastStep.PlantsEaten}" Style="{StaticResource ValueStyle}" />
+                                <TextBlock Grid.Row="10" Grid.Column="2" Text="{Binding TotalPlantsEaten}" Style="{StaticResource ValueStyle}" />
+                            </Grid>
+                        </Border>
+                    </ScrollViewer>
+                </TabItem>
+
+                <TabItem Header="Narodziny">
+                    <Border Style="{StaticResource SectionStyle}" Margin="0,0,0,10">
+                        <DockPanel>
+                            <StackPanel DockPanel.Dock="Top">
+                                <TextBlock Text="Idź do (goto)" Style="{StaticResource SectionHeaderStyle}" />
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Text="{Binding GotoText, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,6,6"
+                                             ToolTip="x,y - pole planszy; #id - żywe zwierzę o podanym numerze">
+                                        <TextBox.InputBindings>
+                                            <KeyBinding Key="Return" Command="{Binding GotoCommand}" />
+                                        </TextBox.InputBindings>
+                                    </TextBox>
+                                    <Button Grid.Column="1" Content="Idź" Command="{Binding GotoCommand}" Margin="0,0,0,6" />
+                                </Grid>
+                                <TextBlock Text="np. „120,45” albo „#37”" Foreground="{StaticResource MutedTextBrush}" Margin="0,0,0,10" />
+
+                                <TextBlock Text="Urodzone zwierzęta" Style="{StaticResource SectionHeaderStyle}" />
+                                <CheckBox Content="Śledź nowe narodziny (przechodź do najnowszego)" IsChecked="{Binding FollowBirths}" />
+                                <WrapPanel>
+                                    <Button Content="Nowsze" Command="{Binding NewerBirthCommand}" ToolTip="Przejdź do kolejnego (nowszego) zwierzęcia z listy" />
+                                    <Button Content="Starsze" Command="{Binding OlderBirthCommand}" ToolTip="Przejdź do poprzedniego (starszego) zwierzęcia z listy" />
+                                    <Button Content="Zapisz zdjęcie" Command="{Binding SaveBirthPhotoCommand}" ToolTip="Zapisz otoczenie z chwili narodzin jako PNG" />
+                                    <Button Content="Nie śledź" Command="{Binding StopTrackingCommand}" />
+                                </WrapPanel>
+                                <TextBlock TextWrapping="Wrap" Foreground="{StaticResource MutedTextBrush}" Margin="0,0,0,6">
+                                    <Run Text="Miniatura to otoczenie 15x15 w chwili narodzin. Lista trzyma" />
+                                    <Run Text="{Binding Source={x:Static vm:MainViewModel.MaxBirthRecords}, Mode=OneTime}" /><Run Text=" najnowszych wpisów." />
+                                </TextBlock>
+                            </StackPanel>
+                            <ListBox ItemsSource="{Binding Births}" SelectedItem="{Binding SelectedBirth}"
+                                     ItemTemplate="{StaticResource BirthTemplate}" BorderBrush="{StaticResource PanelBorderBrush}"
+                                     VirtualizingPanel.IsVirtualizing="True" MinHeight="120" />
+                        </DockPanel>
+                    </Border>
+                </TabItem>
+
+                <TabItem Header="Eksport">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <Border Style="{StaticResource SectionStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Obszar" Style="{StaticResource SectionHeaderStyle}" />
+                                    <CheckBox Content="Tylko widoczny fragment (zamiast całej planszy)" IsChecked="{Binding ExportVisibleOnly}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource SectionStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Obraz" Style="{StaticResource SectionHeaderStyle}" />
+                                    <Button Content="Zapisz obraz PNG…" Command="{Binding ExportImageCommand}" HorizontalAlignment="Left"
+                                            ToolTip="Bieżący stan planszy jako obraz (Ctrl+E)" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource SectionStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Nagrywanie przebiegu" Style="{StaticResource SectionHeaderStyle}" />
+                                    <WrapPanel IsEnabled="{Binding IsRecording, Converter={StaticResource InverseBooleanConverter}}">
+                                        <RadioButton Style="{StaticResource SegmentRadioStyle}" GroupName="Format" Content="Film (GIF)"
+                                                     IsChecked="{Binding RecordFormat, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Gif}" />
+                                        <RadioButton Style="{StaticResource SegmentRadioStyle}" GroupName="Format" Content="Sekwencja PNG"
+                                                     IsChecked="{Binding RecordFormat, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=PngSequence}" />
+                                    </WrapPanel>
+                                    <Button Style="{StaticResource RecordButtonStyle}" Command="{Binding ToggleRecordingCommand}" HorizontalAlignment="Left" />
+                                    <TextBlock Text="{Binding RecordingInfo}" Foreground="{StaticResource MutedTextBrush}" Margin="0,0,0,6" />
+                                    <TextBlock TextWrapping="Wrap" Foreground="{StaticResource MutedTextBrush}"
+                                               Text="Każdy krok (lub klatka przy kilku krokach na klatkę) zapisuje jedną klatkę. Tempo filmu GIF odpowiada ustawionej prędkości. Z sekwencji PNG można zrobić MP4, np. ffmpeg -framerate 10 -i klatka_%05d.png film.mp4" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+            </TabControl>
+        </Grid>
+
+        <Border Margin="10,10,10,10" Style="{StaticResource SectionStyle}" Padding="10">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <DockPanel Grid.ColumnSpan="2" Margin="0,0,0,8">
+                    <Button DockPanel.Dock="Left" Content="-" Command="{Binding ZoomOutCommand}" ToolTip="Oddal (Ctrl+-)" MinWidth="32" />
+                    <Button DockPanel.Dock="Right" Content="Cała plansza" Command="{Binding ShowWholeBoardCommand}" ToolTip="Ctrl+1" />
+                    <TextBlock DockPanel.Dock="Right" Text="{Binding ZoomDescription}" Width="230" VerticalAlignment="Center"
+                               Foreground="{StaticResource MutedTextBrush}" Margin="8,0,8,6" />
+                    <Button DockPanel.Dock="Right" Content="+" Command="{Binding ZoomInCommand}" ToolTip="Przybliż (Ctrl++)" MinWidth="32" />
+                    <Slider Minimum="{Binding Source={x:Static vm:MainViewModel.MinZoomSize}, Mode=OneTime}" Maximum="{Binding MaxZoomSize}"
+                            Value="{Binding ZoomSize}" IsDirectionReversed="True" TickFrequency="1" IsSnapToTickEnabled="True"
+                            ToolTip="Przybliżenie - kółko myszy nad planszą też zmienia zoom" />
+                </DockPanel>
+
+                <Grid Grid.Row="1" x:Name="BoardHost" Background="Transparent" ClipToBounds="True"
+                      PreviewMouseWheel="OnBoardMouseWheel" PreviewMouseDown="OnBoardMouseDown"
+                      PreviewMouseMove="OnBoardMouseMove" PreviewMouseUp="OnBoardMouseUp">
+                    <Grid Style="{StaticResource BitmapLevelStyle}">
+                        <controls:WorldBitmapView World="{Binding World}" RenderVersion="{Binding RenderVersion}"
+                                                  SourceX="{Binding ViewportX}" SourceY="{Binding ViewportY}" SourceSize="{Binding ZoomSize}"
+                                                  MarkerX="{Binding MarkerX}" MarkerY="{Binding MarkerY}"
+                                                  CellCommand="{Binding PaintCellCommand}" />
+                    </Grid>
+
+                    <Viewbox Style="{StaticResource DetailLevelStyle}" Stretch="Uniform">
+                        <ItemsControl ItemsSource="{Binding ViewportCells}" ItemTemplate="{StaticResource CellTemplate}"
+                                      IsEnabled="{Binding IsEditing}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Rows="{Binding ZoomSize}" Columns="{Binding ZoomSize}" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </Viewbox>
+                </Grid>
+
+                <ScrollBar Grid.Row="1" Grid.Column="1" Orientation="Vertical" Margin="6,0,0,0" Style="{StaticResource PanScrollBarStyle}"
+                           Minimum="0" Maximum="{Binding MaxViewportOffset}" Value="{Binding ViewportY}"
+                           SmallChange="1" LargeChange="{Binding ZoomSize}" ViewportSize="{Binding ZoomSize}" />
+                <ScrollBar Grid.Row="2" Orientation="Horizontal" Margin="0,6,0,0" Style="{StaticResource PanScrollBarStyle}"
+                           Minimum="0" Maximum="{Binding MaxViewportOffset}" Value="{Binding ViewportX}"
+                           SmallChange="1" LargeChange="{Binding ZoomSize}" ViewportSize="{Binding ZoomSize}" />
+                <TextBlock Grid.Row="2" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,0,-2"
+                           Foreground="{StaticResource MutedTextBrush}" FontSize="11" IsHitTestVisible="False"
+                           Text="kółko - zoom · środkowy przycisk - przesuwanie">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsWholeBoard}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </Grid>
+        </Border>
+    </DockPanel>
+</Window>

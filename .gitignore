@@ -55,3 +55,21 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+# Visual Studio / Rider / VS Code
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+*.userprefs
+
+# Wyniki testów i pokrycia kodu
+TestResults/
+coverage*.xml
+*.coverage
+
+# Pliki tymczasowe WPF (generowane przy kompilacji XAML)
+*.g.cs
+*.g.i.cs
+*_wpftmp.csproj
