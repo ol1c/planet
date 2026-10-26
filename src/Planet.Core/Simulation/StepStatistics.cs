@@ -10,12 +10,11 @@ public sealed record StepStatistics
     public int AnimalBirths => Births.Count;
     public int AnimalDeathsOfAge { get; init; }
     public int AnimalDeathsOfCrowding { get; init; }
-    public int AnimalDeathsOfHunger { get; init; }
     public int AnimalMoves { get; init; }
 
     public IReadOnlyList<AnimalBirth> Births { get; init; } = [];
 
-    public int AnimalDeaths => AnimalDeathsOfAge + AnimalDeathsOfCrowding + AnimalDeathsOfHunger;
+    public int AnimalDeaths => AnimalDeathsOfAge + AnimalDeathsOfCrowding;
 
     public static StepStatistics None { get; } = new();
 }
@@ -29,9 +28,8 @@ public sealed class SimulationStatistics
     public long AnimalBirths { get; private set; }
     public long AnimalDeathsOfAge { get; private set; }
     public long AnimalDeathsOfCrowding { get; private set; }
-    public long AnimalDeathsOfHunger { get; private set; }
 
-    public long AnimalDeaths => AnimalDeathsOfAge + AnimalDeathsOfCrowding + AnimalDeathsOfHunger;
+    public long AnimalDeaths => AnimalDeathsOfAge + AnimalDeathsOfCrowding;
 
     public StepStatistics LastStep { get; private set; } = StepStatistics.None;
 
@@ -44,15 +42,18 @@ public sealed class SimulationStatistics
         AnimalBirths += step.AnimalBirths;
         AnimalDeathsOfAge += step.AnimalDeathsOfAge;
         AnimalDeathsOfCrowding += step.AnimalDeathsOfCrowding;
-        AnimalDeathsOfHunger += step.AnimalDeathsOfHunger;
         LastStep = step;
     }
 
     public void Reset()
     {
         Steps = 0;
-        PlantBirths = PlantDeaths = PlantsEaten = 0;
-        AnimalBirths = AnimalDeathsOfAge = AnimalDeathsOfCrowding = AnimalDeathsOfHunger = 0;
+        PlantBirths = 0;
+        PlantDeaths = 0;
+        PlantsEaten = 0;
+        AnimalBirths = 0;
+        AnimalDeathsOfAge = 0;
+        AnimalDeathsOfCrowding = 0;
         LastStep = StepStatistics.None;
     }
 }

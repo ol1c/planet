@@ -15,9 +15,6 @@ public sealed class RulesViewModel : ObservableObject, INotifyDataErrorInfo
     private string _animalSurvival = "";
     private string _moveRange = "";
     private string _lifespan = "";
-    private string _companyTime = "";
-    private string _maturityAge = "";
-    private string _starvationTime = "";
     private bool _isLoading;
 
     public RulesViewModel(RuleSet rules)
@@ -40,9 +37,6 @@ public sealed class RulesViewModel : ObservableObject, INotifyDataErrorInfo
     public string AnimalSurvival { get => _animalSurvival; set => SetRule(ref _animalSurvival, value); }
     public string MoveRange { get => _moveRange; set => SetRule(ref _moveRange, value); }
     public string Lifespan { get => _lifespan; set => SetRule(ref _lifespan, value); }
-    public string CompanyTime { get => _companyTime; set => SetRule(ref _companyTime, value); }
-    public string MaturityAge { get => _maturityAge; set => SetRule(ref _maturityAge, value); }
-    public string StarvationTime { get => _starvationTime; set => SetRule(ref _starvationTime, value); }
 
     public bool HasErrors => _errors.Count > 0;
 
@@ -59,9 +53,6 @@ public sealed class RulesViewModel : ObservableObject, INotifyDataErrorInfo
         AnimalSurvival = rules.AnimalSurvival.ToString();
         MoveRange = rules.MoveRange.ToString();
         Lifespan = rules.Lifespan.ToString();
-        CompanyTime = rules.CompanyTime.ToString();
-        MaturityAge = rules.MaturityAge.ToString();
-        StarvationTime = rules.StarvationTime.ToString();
         _isLoading = false;
         Validate();
     }
@@ -88,15 +79,12 @@ public sealed class RulesViewModel : ObservableObject, INotifyDataErrorInfo
 
         var move = ValidateNumber(nameof(MoveRange), MoveRange, RuleSet.MinMoveRange, RuleSet.MaxMoveRange);
         var life = ValidateNumber(nameof(Lifespan), Lifespan, RuleSet.MinLifespan, RuleSet.MaxLifespan);
-        var company = ValidateNumber(nameof(CompanyTime), CompanyTime, 0, RuleSet.MaxHistoryValue);
-        var maturity = ValidateNumber(nameof(MaturityAge), MaturityAge, 0, RuleSet.MaxHistoryValue);
-        var starvation = ValidateNumber(nameof(StarvationTime), StarvationTime, 0, RuleSet.MaxHistoryValue);
 
         if (HasErrors)
             return;
 
         var rules = new RuleSet(sets[nameof(PlantBirth)], sets[nameof(PlantSurvival)], sets[nameof(AnimalBirth)],
-            sets[nameof(AnimalBirthPlants)], sets[nameof(AnimalSurvival)], move, life, company, maturity, starvation);
+            sets[nameof(AnimalBirthPlants)], sets[nameof(AnimalSurvival)], move, life);
         if (rules.Equals(Rules))
             return;
 
@@ -109,7 +97,7 @@ public sealed class RulesViewModel : ObservableObject, INotifyDataErrorInfo
     private int ValidateNumber(string propertyName, string text, int min, int max)
     {
         var ok = int.TryParse(text, out var value) && value >= min && value <= max;
-        SetError(propertyName, ok ? null : $"Wpisz liczbę całkowitą z zakresu {min}–{max}.");
+        SetError(propertyName, ok ? null : $"Wpisz liczbę całkowitą z zakresu {min}-{max}.");
         return value;
     }
 

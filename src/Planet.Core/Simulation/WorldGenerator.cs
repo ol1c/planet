@@ -18,7 +18,7 @@ public static class WorldGenerator
         {
             var cell = Cell.Empty.WithPlant(random.NextDouble() < plantDensity);
             if (random.NextDouble() < animalDensity)
-                cell = cell.WithAnimal(random.Next(Math.Max(1, lifespan)), world.AllocateAnimalId());
+                cell = cell.WithAnimal(0, world.AllocateAnimalId());
             world[x, y] = cell;
         }
     }

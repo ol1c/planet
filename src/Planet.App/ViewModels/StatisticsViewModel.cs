@@ -16,7 +16,6 @@ public sealed class StatisticsViewModel : ObservableObject
     private long _totalAnimalDeaths;
     private long _totalAnimalDeathsOfAge;
     private long _totalAnimalDeathsOfCrowding;
-    private long _totalAnimalDeathsOfHunger;
 
     public int Generation { get => _generation; private set => SetProperty(ref _generation, value); }
     public int Plants { get => _plants; private set => SetProperty(ref _plants, value); }
@@ -31,7 +30,6 @@ public sealed class StatisticsViewModel : ObservableObject
     public long TotalAnimalDeaths { get => _totalAnimalDeaths; private set => SetProperty(ref _totalAnimalDeaths, value); }
     public long TotalAnimalDeathsOfAge { get => _totalAnimalDeathsOfAge; private set => SetProperty(ref _totalAnimalDeathsOfAge, value); }
     public long TotalAnimalDeathsOfCrowding { get => _totalAnimalDeathsOfCrowding; private set => SetProperty(ref _totalAnimalDeathsOfCrowding, value); }
-    public long TotalAnimalDeathsOfHunger { get => _totalAnimalDeathsOfHunger; private set => SetProperty(ref _totalAnimalDeathsOfHunger, value); }
 
     public void Update(World world, SimulationStatistics totals)
     {
@@ -45,6 +43,5 @@ public sealed class StatisticsViewModel : ObservableObject
         TotalAnimalDeaths = totals.AnimalDeaths;
         TotalAnimalDeathsOfAge = totals.AnimalDeathsOfAge;
         TotalAnimalDeathsOfCrowding = totals.AnimalDeathsOfCrowding;
-        TotalAnimalDeathsOfHunger = totals.AnimalDeathsOfHunger;
     }
 }

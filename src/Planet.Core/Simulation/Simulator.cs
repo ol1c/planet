@@ -14,41 +14,37 @@ public sealed class Simulator
     private readonly Random _random;
 
     private Cell[] _next = [];
-    private byte[] _plantFlags = [], _animalFlags = [], _matureFlags = [];
-    private byte[] _plantNeighbors = [], _animalNeighbors = [], _matureNeighbors = [];
+    private byte[] _plantFlags = [], _animalFlags = [];
+    private byte[] _plantNeighbors = [], _animalNeighbors = [];
     private bool[] _processed = [];
 
     public Simulator(Random? random = null) => _random = random ?? new Random();
 
     public StepStatistics Step(World world, RuleSet rules)
     {
-        var n = world.Size;
-        var length = n * n;
+        var size = world.Size;
+        var length = size * size;
         EnsureBuffers(length);
 
-        var current = world.Cells;
+        var cells = world.Cells;
         var next = _next;
         Array.Clear(next);
 
         for (var i = 0; i < length; i++)
         {
-            var c = current[i];
+            var c = cells[i];
             _plantFlags[i] = c.HasPlant ? (byte)1 : (byte)0;
             _animalFlags[i] = c.HasAnimal ? (byte)1 : (byte)0;
-            _matureFlags[i] = c.HasAnimal && c.AnimalAge >= rules.MaturityAge ? (byte)1 : (byte)0;
         }
-        CountNeighbors(_plantFlags, _plantNeighbors, n, world.Wraps);
-        CountNeighbors(_animalFlags, _animalNeighbors, n, world.Wraps);
-        var parents = rules.MaturityAge > 0 ? _matureNeighbors : _animalNeighbors;
-        if (rules.MaturityAge > 0)
-            CountNeighbors(_matureFlags, _matureNeighbors, n, world.Wraps);
+        CountNeighbors(_plantFlags, _plantNeighbors, size, world.Wraps);
+        CountNeighbors(_animalFlags, _animalNeighbors, size, world.Wraps);
 
         int plantBirths = 0, plantDeaths = 0, plantsEaten = 0;
-        Parallel.For(0, n, () => (Births: 0, Deaths: 0, Eaten: 0), (y, _, acc) =>
+        Parallel.For(0, size, () => (Births: 0, Deaths: 0, Eaten: 0), (y, _, acc) =>
         {
-            for (int i = y * n, end = i + n; i < end; i++)
+            for (int i = y * size, end = i + size; i < end; i++)
             {
-                var c = current[i];
+                var c = cells[i];
                 if (c.HasPlant)
                 {
                     if (c.HasAnimal)
@@ -75,31 +71,31 @@ public sealed class Simulator
         var births = new List<AnimalBirth>();
         for (var i = 0; i < length; i++)
         {
-            if (current[i].HasAnimal)
+            if (cells[i].HasAnimal)
                 continue;
-            if (rules.AnimalBirth.Contains(parents[i]) && rules.AnimalBirthPlants.Contains(_plantNeighbors[i]))
+            if (rules.AnimalBirth.Contains(_animalNeighbors[i]) &&rules.AnimalBirthPlants.Contains(_plantNeighbors[i]))
             {
                 var id = world.AllocateAnimalId();
                 next[i] = next[i].WithAnimal(0, id);
-                births.Add(new AnimalBirth(id, i % n, i / n));
+                births.Add(new AnimalBirth(id, i % size, i / size));
             }
         }
 
         var animals = new List<int>();
         for (var i = 0; i < length; i++)
-            if (current[i].HasAnimal)
+            if (cells[i].HasAnimal)
                 animals.Add(i);
         Shuffle(animals);
 
         var processed = _processed;
         Array.Clear(processed);
-        bool IsOccupied(int i) => next[i].HasAnimal || (current[i].HasAnimal && !processed[i]);
+        bool IsOccupied(int i) => next[i].HasAnimal || (cells[i].HasAnimal && !processed[i]);
 
-        int deathsOfAge = 0, deathsOfCrowding = 0, deathsOfHunger = 0, moves = 0;
+        int deathsOfAge = 0, deathsOfCrowding = 0, moves = 0;
         foreach (var index in animals)
         {
             processed[index] = true;
-            var cell = current[index];
+            var cell = cells[index];
 
             var age = cell.AnimalAge + 1;
             if (age >= rules.Lifespan)
@@ -114,34 +110,11 @@ public sealed class Simulator
                 continue;
             }
 
-            var eats = cell.HasPlant;
-            var hunger = eats ? 0 : cell.Hunger + 1;
-            if (!eats && rules.StarvationTime > 0 && hunger >= rules.StarvationTime)
-            {
-                deathsOfHunger++;
-                continue;
-            }
-
-            int target;
-            if (eats)
-                target = index;
-            else if (cell.Satiety > 0)
-                target = SeekCompany(world, current, index, rules.MoveRange, IsOccupied);
-            else
-                target = SeekFood(world, current, index, rules.MoveRange, IsOccupied);
-
+            var target = cell.HasPlant ? index : SeekFood(world, cells, index, rules.MoveRange, IsOccupied);
             if (target != index)
                 moves++;
 
-            var satiety = eats ? rules.CompanyTime : Math.Max(0, cell.Satiety - 1);
-            next[target] = next[target] with
-            {
-                HasAnimal = true,
-                AnimalAge = age,
-                AnimalId = cell.AnimalId,
-                Hunger = (short)Math.Min(hunger, short.MaxValue),
-                Satiety = (short)satiety,
-            };
+            next[target] = next[target].WithAnimal(age, cell.AnimalId);
         }
 
         _next = world.SwapCells(next);
@@ -155,12 +128,11 @@ public sealed class Simulator
             Births = births,
             AnimalDeathsOfAge = deathsOfAge,
             AnimalDeathsOfCrowding = deathsOfCrowding,
-            AnimalDeathsOfHunger = deathsOfHunger,
             AnimalMoves = moves,
         };
     }
 
-    private int SeekFood(World world, Cell[] current, int index, int moveRange, Func<int, bool> isOccupied)
+    private int SeekFood(World world, Cell[] cells, int index, int moveRange, Func<int, bool> isOccupied)
     {
         var candidates = new List<int>(8);
         for (var distance = 1; distance <= moveRange; distance++)
@@ -168,30 +140,8 @@ public sealed class Simulator
             foreach (var (dx, dy) in Directions)
             {
                 var i = Offset(world, index, dx * distance, dy * distance);
-                if (i >= 0 && current[i].HasPlant && !isOccupied(i))
+                if (i >= 0 && cells[i].HasPlant && !isOccupied(i))
                     candidates.Add(i);
-            }
-            if (candidates.Count > 0)
-                return candidates[_random.Next(candidates.Count)];
-        }
-        return RandomStep(world, index, isOccupied, candidates);
-    }
-
-    private int SeekCompany(World world, Cell[] current, int index, int moveRange, Func<int, bool> isOccupied)
-    {
-        var candidates = new List<int>(8);
-        for (var distance = 1; distance <= moveRange; distance++)
-        {
-            foreach (var (dx, dy) in Directions)
-            {
-                var i = Offset(world, index, dx * distance, dy * distance);
-                if (i < 0 || i == index || !current[i].HasAnimal)
-                    continue;
-                if (distance == 1)
-                    return index;
-                var before = Offset(world, index, dx * (distance - 1), dy * (distance - 1));
-                if (before >= 0 && !isOccupied(before))
-                    candidates.Add(before);
             }
             if (candidates.Count > 0)
                 return candidates[_random.Next(candidates.Count)];
@@ -232,7 +182,7 @@ public sealed class Simulator
                         if (!wraps) continue;
                         ny = (ny + n) % n;
                     }
-                    var row = ny * n;
+                    var row_start = ny * n;
                     for (var dx = -1; dx <= 1; dx++)
                     {
                         if (dx == 0 && dy == 0) continue;
@@ -242,7 +192,7 @@ public sealed class Simulator
                             if (!wraps) continue;
                             nx = (nx + n) % n;
                         }
-                        sum += flags[row + nx];
+                        sum += flags[row_start + nx];
                     }
                 }
                 result[y * n + x] = (byte)sum;
@@ -257,10 +207,8 @@ public sealed class Simulator
         _next = new Cell[length];
         _plantFlags = new byte[length];
         _animalFlags = new byte[length];
-        _matureFlags = new byte[length];
         _plantNeighbors = new byte[length];
         _animalNeighbors = new byte[length];
-        _matureNeighbors = new byte[length];
         _processed = new bool[length];
     }
 

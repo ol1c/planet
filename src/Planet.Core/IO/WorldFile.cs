@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Text;
 using Planet.Core.Model;
 
 namespace Planet.Core.IO;
@@ -24,8 +23,8 @@ public static class WorldFile
 
     public static void Save(TextWriter writer, World world, RuleSet rules)
     {
-        writer.WriteLine("# Planet – zapis ekosystemu");
-        writer.WriteLine("# Pola: . puste, P roślina, A<wiek>[h<głód>][s<sytość>] zwierzę, PA… zwierzę na roślinie");
+        writer.WriteLine("# Planet - zapis ekosystemu");
+        writer.WriteLine("# Pola: . puste, P roślina, A<wiek> zwierzę, PA<wiek> zwierzę na roślinie");
         writer.WriteLine($"RULES {rules}");
         writer.WriteLine($"SIZE {world.Size}");
         writer.WriteLine($"WRAP {(world.Wraps ? 1 : 0)}");
@@ -60,7 +59,7 @@ public static class WorldFile
             var line = reader.ReadLine();
             lineNumber++;
             if (line is null)
-                throw new WorldFileFormatException("Nieoczekiwany koniec pliku – brak sekcji GRID.", lineNumber);
+                throw new WorldFileFormatException("Nieoczekiwany koniec pliku - brak sekcji GRID.", lineNumber);
 
             line = line.Trim();
             if (line.Length == 0 || line.StartsWith('#'))
@@ -82,7 +81,7 @@ public static class WorldFile
                 case "SIZE":
                     if (!int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var s) ||
                         s is < World.MinSize or > World.MaxSize)
-                        throw new WorldFileFormatException($"Rozmiar musi być liczbą {World.MinSize}–{World.MaxSize}.", lineNumber);
+                        throw new WorldFileFormatException($"Rozmiar musi być liczbą {World.MinSize}-{World.MaxSize}.", lineNumber);
                     size = s;
                     break;
                 case "WRAP":
@@ -133,21 +132,13 @@ public static class WorldFile
         return new WorldDocument(world, rules);
     }
 
-    private static string FormatCell(Cell cell)
+    private static string FormatCell(Cell cell) => cell switch
     {
-        if (cell.IsEmpty)
-            return ".";
-        var sb = new StringBuilder(8);
-        if (cell.HasPlant)
-            sb.Append('P');
-        if (cell.HasAnimal)
-        {
-            sb.Append('A').Append(cell.AnimalAge.ToString(CultureInfo.InvariantCulture));
-            if (cell.Hunger > 0) sb.Append('h').Append(cell.Hunger.ToString(CultureInfo.InvariantCulture));
-            if (cell.Satiety > 0) sb.Append('s').Append(cell.Satiety.ToString(CultureInfo.InvariantCulture));
-        }
-        return sb.ToString();
-    }
+        { HasPlant: true, HasAnimal: true } => $"PA{cell.AnimalAge}",
+        { HasAnimal: true } => $"A{cell.AnimalAge}",
+        { HasPlant: true } => "P",
+        _ => ".",
+    };
 
     private static bool TryParseCell(string token, out Cell cell)
     {
@@ -168,37 +159,11 @@ public static class WorldFile
             return false;
         rest = rest[1..];
 
-        if (!TryReadNumber(ref rest, out var age))
-            return false;
-        int hunger = 0, satiety = 0;
-        if (!rest.IsEmpty && rest[0] == 'h')
-        {
-            rest = rest[1..];
-            if (!TryReadNumber(ref rest, out hunger) || hunger > short.MaxValue)
-                return false;
-        }
-        if (!rest.IsEmpty && rest[0] == 's')
-        {
-            rest = rest[1..];
-            if (!TryReadNumber(ref rest, out satiety) || satiety > short.MaxValue)
-                return false;
-        }
-        if (!rest.IsEmpty)
+        var age = 0;
+        if (!rest.IsEmpty && !int.TryParse(rest, NumberStyles.None, CultureInfo.InvariantCulture, out age))
             return false;
 
-        cell = cell.WithAnimal(age) with { Hunger = (short)hunger, Satiety = (short)satiety };
-        return true;
-    }
-
-    private static bool TryReadNumber(ref ReadOnlySpan<char> text, out int value)
-    {
-        var length = 0;
-        while (length < text.Length && char.IsAsciiDigit(text[length]))
-            length++;
-        value = 0;
-        if (length > 0 && !int.TryParse(text[..length], NumberStyles.None, CultureInfo.InvariantCulture, out value))
-            return false;
-        text = text[length..];
+        cell = cell.WithAnimal(age);
         return true;
     }
 }

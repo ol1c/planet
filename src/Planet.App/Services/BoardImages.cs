@@ -21,9 +21,6 @@ public static class BoardImages
     public static IReadOnlyList<Color> Palette() =>
         PaletteKeys.Select(key => Application.Current.TryFindResource(key) is Color c ? c : Colors.Magenta).ToList();
 
-    public static IReadOnlyList<(byte R, byte G, byte B)> PaletteRgb() =>
-        Palette().Select(c => (c.R, c.G, c.B)).ToList();
-
     public static BitmapSource CreateBitmap(byte[] indices, int width, int height)
     {
         var bitmap = BitmapSource.Create(width, height, 96, 96, PixelFormats.Indexed8,

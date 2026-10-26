@@ -12,7 +12,7 @@ public sealed class World
     public World(int size, bool wraps = true)
     {
         if (size is < MinSize or > MaxSize)
-            throw new ArgumentOutOfRangeException(nameof(size), size, $"Rozmiar planszy musi być z zakresu {MinSize}–{MaxSize}.");
+            throw new ArgumentOutOfRangeException(nameof(size), size, $"Rozmiar planszy musi być z zakresu {MinSize}-{MaxSize}.");
         Size = size;
         Wraps = wraps;
         _cells = new Cell[size * size];

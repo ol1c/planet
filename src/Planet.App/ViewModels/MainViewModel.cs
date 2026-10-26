@@ -11,8 +11,6 @@ namespace Planet.App.ViewModels;
 
 public sealed partial class MainViewModel : ObservableObject
 {
-    public const int StandardMaxBoardSize = 300;
-
     private readonly IDialogService _dialogs;
     private readonly Simulator _simulator = new();
     private readonly SimulationStatistics _totals = new();
@@ -24,11 +22,10 @@ public sealed partial class MainViewModel : ObservableObject
     private int _stepsPerTick = 1;
     private EditTool _tool = EditTool.Plant;
     private int _newBoardSize = 60;
-    private bool _isLargeMode;
     private double _plantDensity = 0.3;
     private double _animalDensity = 0.05;
     private int _renderVersion;
-    private string _statusMessage = "Tryb edycji – kliknij pole, aby postawić roślinę lub zwierzę.";
+    private string _statusMessage = "Tryb edycji - kliknij pole, aby postawić roślinę lub zwierzę.";
     private string? _currentFile;
 
     public MainViewModel(IDialogService dialogs)
@@ -46,7 +43,7 @@ public sealed partial class MainViewModel : ObservableObject
         StepCommand = new RelayCommand(() => DoSteps(1), () => !IsRunning);
         ClearCommand = new RelayCommand(Clear, () => !IsRunning);
         RandomizeCommand = new RelayCommand(Randomize, () => !IsRunning);
-        NewBoardCommand = new RelayCommand(NewBoard, () => !IsRunning && NewBoardSize >= World.MinSize && NewBoardSize <= MaxAllowedBoardSize);
+        NewBoardCommand = new RelayCommand(NewBoard, () => !IsRunning && NewBoardSize >= World.MinSize && NewBoardSize <= World.MaxSize);
         SaveCommand = new RelayCommand(Save);
         OpenCommand = new RelayCommand(Open, () => !IsRunning);
         ResetRulesCommand = new RelayCommand(() => Rules.Load(RuleSet.Default));
@@ -91,19 +88,6 @@ public sealed partial class MainViewModel : ObservableObject
             OnPropertyChanged();
         }
     }
-
-    public bool IsLargeMode
-    {
-        get => _isLargeMode;
-        set
-        {
-            if (!SetProperty(ref _isLargeMode, value)) return;
-            OnPropertyChanged(nameof(MaxAllowedBoardSize));
-            CommandManager.InvalidateRequerySuggested();
-        }
-    }
-
-    public int MaxAllowedBoardSize => IsLargeMode ? World.MaxSize : StandardMaxBoardSize;
 
     public int RenderVersion { get => _renderVersion; private set => SetProperty(ref _renderVersion, value); }
 
@@ -175,7 +159,7 @@ public sealed partial class MainViewModel : ObservableObject
         {
             _timer.Stop();
             IsRunning = false;
-            StatusMessage = "Zatrzymano – tryb edycji.";
+            StatusMessage = "Zatrzymano - tryb edycji.";
         }
         else
         {
@@ -187,6 +171,8 @@ public sealed partial class MainViewModel : ObservableObject
 
     private void DoSteps(int count)
     {
+        if (!FollowBirths && TrackedAnimalId != 0)
+            ClearTracking();
         for (var i = 0; i < count; i++)
         {
             var step = _simulator.Step(_world, Rules.Rules);
@@ -195,7 +181,6 @@ public sealed partial class MainViewModel : ObservableObject
         }
         Refresh();
         AfterSteps();
-        RecordFrame();
     }
 
     private void Clear()
@@ -243,8 +228,6 @@ public sealed partial class MainViewModel : ObservableObject
         try
         {
             var document = WorldFile.Load(path);
-            if (document.World.Size > StandardMaxBoardSize)
-                IsLargeMode = true;
             Rules.Load(document.Rules);
             ReplaceWorld(document.World);
             _currentFile = path;
@@ -258,7 +241,6 @@ public sealed partial class MainViewModel : ObservableObject
 
     private void ReplaceWorld(World world)
     {
-        StopRecording();
         var wasWhole = ZoomSize >= BoardSize;
         World = world;
         NewBoardSize = world.Size;

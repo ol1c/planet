@@ -29,10 +29,10 @@ public sealed class CellViewModel(ICommand editCommand, ICommand eraseCommand) :
 
     public string Description => (HasPlant, HasAnimal) switch
     {
-        (true, true) => $"– roślina i zwierzę #{AnimalId} (wiek {AnimalAge})",
-        (false, true) => $"– zwierzę #{AnimalId} (wiek {AnimalAge})",
-        (true, false) => "– roślina",
-        _ => "– puste",
+        (true, true) => $"- roślina i zwierzę #{AnimalId} (wiek {AnimalAge})",
+        (false, true) => $"- zwierzę #{AnimalId} (wiek {AnimalAge})",
+        (true, false) => "- roślina",
+        _ => "- puste",
     };
 
     public int AnimalId { get; private set; }

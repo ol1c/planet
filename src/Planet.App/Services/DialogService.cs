@@ -19,17 +19,10 @@ public sealed class DialogService : IDialogService
         var (filter, extension) = kind switch
         {
             FileKind.Png => ("Obraz PNG (*.png)|*.png", ".png"),
-            FileKind.Gif => ("Animacja GIF (*.gif)|*.gif", ".gif"),
             _ => (WorldFilter, WorldFile.FileExtension),
         };
         var dialog = new SaveFileDialog { Filter = filter, DefaultExt = extension, FileName = defaultFileName };
         return dialog.ShowDialog() == true ? dialog.FileName : null;
-    }
-
-    public string? ShowFolderDialog(string title)
-    {
-        var dialog = new OpenFolderDialog { Title = title };
-        return dialog.ShowDialog() == true ? dialog.FolderName : null;
     }
 
     public void ShowError(string message) =>

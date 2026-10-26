@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using System.Globalization;
 using System.IO;
 using System.Windows.Input;
 using Planet.App.Services;
@@ -18,7 +17,6 @@ public sealed partial class MainViewModel
 
     private BirthRecordViewModel? _selectedBirth;
     private bool _followBirths;
-    private string _gotoText = "";
     private int _trackedAnimalId;
     private int _markerX = -1;
     private int _markerY = -1;
@@ -38,14 +36,11 @@ public sealed partial class MainViewModel
 
     public bool FollowBirths { get => _followBirths; set => SetProperty(ref _followBirths, value); }
 
-    public string GotoText { get => _gotoText; set => SetProperty(ref _gotoText, value); }
-
     public int TrackedAnimalId { get => _trackedAnimalId; private set => SetProperty(ref _trackedAnimalId, value); }
 
     public int MarkerX { get => _markerX; private set => SetProperty(ref _markerX, value); }
     public int MarkerY { get => _markerY; private set => SetProperty(ref _markerY, value); }
 
-    public ICommand GotoCommand { get; private set; } = null!;
     public ICommand NewerBirthCommand { get; private set; } = null!;
     public ICommand OlderBirthCommand { get; private set; } = null!;
     public ICommand SaveBirthPhotoCommand { get; private set; } = null!;
@@ -53,7 +48,6 @@ public sealed partial class MainViewModel
 
     private void InitializeBirths()
     {
-        GotoCommand = new RelayCommand(Goto, () => !string.IsNullOrWhiteSpace(GotoText));
         NewerBirthCommand = new RelayCommand(() => SelectBirthAt(Births.IndexOf(SelectedBirth!) - 1),
             () => SelectedBirth is not null && Births.IndexOf(SelectedBirth) > 0);
         OlderBirthCommand = new RelayCommand(() => SelectBirthAt(SelectedBirth is null ? 0 : Births.IndexOf(SelectedBirth) + 1),
@@ -100,51 +94,16 @@ public sealed partial class MainViewModel
         if (_world.TryFindAnimal(record.Id, out var x, out var y, out var cell))
         {
             CenterOn(x, y);
-            StatusMessage = $"Zwierzę #{record.Id}: pole ({x}, {y}), wiek {cell.AnimalAge}, głód {cell.Hunger}" +
-                            (cell.Satiety > 0 ? $", szuka towarzystwa jeszcze {cell.Satiety} kr." : "") +
+            StatusMessage = $"Zwierzę #{record.Id}: pole ({x}, {y}), wiek {cell.AnimalAge}" +
                             $" · urodzone w kroku {record.Generation} na ({record.X}, {record.Y}).";
         }
         else
         {
             CenterOn(record.X, record.Y);
-            StatusMessage = $"Zwierzę #{record.Id} już nie żyje – pokazuję miejsce narodzin ({record.X}, {record.Y}).";
+            StatusMessage = $"Zwierzę #{record.Id} już nie żyje - pokazuję miejsce narodzin ({record.X}, {record.Y}).";
         }
         UpdateTrackedMarker();
         RefreshViewport();
-    }
-
-    private void Goto()
-    {
-        var text = GotoText.Trim();
-        if (text.StartsWith('#') && int.TryParse(text[1..], NumberStyles.None, CultureInfo.InvariantCulture, out var id))
-        {
-            if (_world.TryFindAnimal(id, out var ax, out var ay, out var cell))
-            {
-                TrackedAnimalId = id;
-                FocusZoom();
-                CenterOn(ax, ay);
-                UpdateTrackedMarker();
-                RefreshViewport();
-                StatusMessage = $"Zwierzę #{id}: pole ({ax}, {ay}), wiek {cell.AnimalAge}.";
-            }
-            else
-            {
-                StatusMessage = $"Nie ma na planszy żywego zwierzęcia #{id}.";
-            }
-            return;
-        }
-
-        var parts = text.Split([',', ';', ' '], StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length == 2 && int.TryParse(parts[0], out var x) && int.TryParse(parts[1], out var y) && _world.Contains(x, y))
-        {
-            FocusZoom();
-            CenterOn(x, y);
-            StatusMessage = $"Widok wyśrodkowany na polu ({x}, {y}).";
-        }
-        else
-        {
-            StatusMessage = $"Niezrozumiałe polecenie goto: \"{text}\" – wpisz \"x,y\" (0–{BoardSize - 1}) albo \"#id\".";
-        }
     }
 
     private void FocusZoom()
@@ -171,11 +130,16 @@ public sealed partial class MainViewModel
 
     private void StopTracking()
     {
+        ClearTracking();
+        UpdateTrackedMarker();
+        RefreshViewport();
+    }
+
+    private void ClearTracking()
+    {
         TrackedAnimalId = 0;
         _selectedBirth = null;
         OnPropertyChanged(nameof(SelectedBirth));
-        UpdateTrackedMarker();
-        RefreshViewport();
     }
 
     private void UpdateTrackedMarker()
@@ -190,8 +154,6 @@ public sealed partial class MainViewModel
     {
         _pendingBirths.Clear();
         Births.Clear();
-        _selectedBirth = null;
-        OnPropertyChanged(nameof(SelectedBirth));
-        TrackedAnimalId = 0;
+        ClearTracking();
     }
 }

@@ -6,7 +6,6 @@ public sealed class RuleSet : IEquatable<RuleSet>
     public const int MaxMoveRange = 20;
     public const int MinLifespan = 1;
     public const int MaxLifespan = 10_000;
-    public const int MaxHistoryValue = 1_000;
 
     public static RuleSet Default { get; } = new(
         plantBirth: CountSet.Of(1, 2, 3, 4),
@@ -18,19 +17,12 @@ public sealed class RuleSet : IEquatable<RuleSet>
         lifespan: 10);
 
     public RuleSet(CountSet plantBirth, CountSet plantSurvival, CountSet animalBirth,
-        CountSet animalBirthPlants, CountSet animalSurvival, int moveRange, int lifespan,
-        int companyTime = 0, int maturityAge = 0, int starvationTime = 0)
+        CountSet animalBirthPlants, CountSet animalSurvival, int moveRange, int lifespan)
     {
         if (moveRange is < MinMoveRange or > MaxMoveRange)
-            throw new ArgumentOutOfRangeException(nameof(moveRange), moveRange, $"M musi być z zakresu {MinMoveRange}–{MaxMoveRange}.");
+            throw new ArgumentOutOfRangeException(nameof(moveRange), moveRange, $"M musi być z zakresu {MinMoveRange}-{MaxMoveRange}.");
         if (lifespan is < MinLifespan or > MaxLifespan)
-            throw new ArgumentOutOfRangeException(nameof(lifespan), lifespan, $"L musi być z zakresu {MinLifespan}–{MaxLifespan}.");
-        if (companyTime is < 0 or > MaxHistoryValue)
-            throw new ArgumentOutOfRangeException(nameof(companyTime), companyTime, $"S musi być z zakresu 0–{MaxHistoryValue}.");
-        if (maturityAge is < 0 or > MaxHistoryValue)
-            throw new ArgumentOutOfRangeException(nameof(maturityAge), maturityAge, $"D musi być z zakresu 0–{MaxHistoryValue}.");
-        if (starvationTime is < 0 or > MaxHistoryValue)
-            throw new ArgumentOutOfRangeException(nameof(starvationTime), starvationTime, $"H musi być z zakresu 0–{MaxHistoryValue}.");
+            throw new ArgumentOutOfRangeException(nameof(lifespan), lifespan, $"L musi być z zakresu {MinLifespan}-{MaxLifespan}.");
 
         PlantBirth = plantBirth;
         PlantSurvival = plantSurvival;
@@ -39,9 +31,6 @@ public sealed class RuleSet : IEquatable<RuleSet>
         AnimalSurvival = animalSurvival;
         MoveRange = moveRange;
         Lifespan = lifespan;
-        CompanyTime = companyTime;
-        MaturityAge = maturityAge;
-        StarvationTime = starvationTime;
     }
 
     public CountSet PlantBirth { get; }
@@ -58,22 +47,8 @@ public sealed class RuleSet : IEquatable<RuleSet>
 
     public int Lifespan { get; }
 
-    public int CompanyTime { get; }
-
-    public int MaturityAge { get; }
-
-    public int StarvationTime { get; }
-
-    public bool HasHistory => CompanyTime > 0 || MaturityAge > 0 || StarvationTime > 0;
-
-    public override string ToString()
-    {
-        var text = $"R{PlantBirth}/W{PlantSurvival}/B{AnimalBirth}/P{AnimalBirthPlants}/Z{AnimalSurvival}/M{MoveRange}/L{Lifespan}";
-        if (CompanyTime > 0) text += $"/S{CompanyTime}";
-        if (MaturityAge > 0) text += $"/D{MaturityAge}";
-        if (StarvationTime > 0) text += $"/H{StarvationTime}";
-        return text;
-    }
+    public override string ToString() =>
+        $"R{PlantBirth}/W{PlantSurvival}/B{AnimalBirth}/P{AnimalBirthPlants}/Z{AnimalSurvival}/M{MoveRange}/L{Lifespan}";
 
     public static RuleSet Parse(string text) =>
         TryParse(text, out var rules, out var error) ? rules! : throw new FormatException(error);
@@ -112,7 +87,7 @@ public sealed class RuleSet : IEquatable<RuleSet>
                     }
                     sets[key] = set;
                     break;
-                case 'M' or 'L' or 'S' or 'D' or 'H':
+                case 'M' or 'L':
                     if (!int.TryParse(value, out var number))
                     {
                         error = $"{key}: oczekiwano liczby całkowitej, otrzymano \"{value}\".";
@@ -137,8 +112,7 @@ public sealed class RuleSet : IEquatable<RuleSet>
 
         try
         {
-            rules = new RuleSet(sets['R'], sets['W'], sets['B'], sets['P'], sets['Z'], numbers['M'], numbers['L'],
-                numbers.GetValueOrDefault('S'), numbers.GetValueOrDefault('D'), numbers.GetValueOrDefault('H'));
+            rules = new RuleSet(sets['R'], sets['W'], sets['B'], sets['P'], sets['Z'], numbers['M'], numbers['L']);
             return true;
         }
         catch (ArgumentOutOfRangeException ex)

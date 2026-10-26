@@ -20,7 +20,7 @@ public readonly struct CountSet : IEquatable<CountSet>
         foreach (var count in counts)
         {
             if (count is < 0 or > MaxCount)
-                throw new ArgumentOutOfRangeException(nameof(counts), count, $"Liczba sąsiadów musi być z zakresu 0–{MaxCount}.");
+                throw new ArgumentOutOfRangeException(nameof(counts), count, $"Liczba sąsiadów musi być z zakresu 0-{MaxCount}.");
             mask |= (ushort)(1 << count);
         }
         return new CountSet(mask);
@@ -66,7 +66,7 @@ public readonly struct CountSet : IEquatable<CountSet>
                 continue;
             if (ch is < '0' or > '8')
             {
-                error = $"Niedozwolony znak '{ch}' – dozwolone są cyfry 0–{MaxCount}.";
+                error = $"Niedozwolony znak '{ch}' - dozwolone są cyfry 0-{MaxCount}.";
                 return false;
             }
             mask |= (ushort)(1 << (ch - '0'));

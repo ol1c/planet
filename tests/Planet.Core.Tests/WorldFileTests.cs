@@ -43,24 +43,6 @@ public class WorldFileTests
     }
 
     [Fact]
-    public void SaveAndLoad_KeepsAnimalHistory()
-    {
-        var world = new World(50);
-        world[3, 4] = new Cell(true, true, 5) { Hunger = 2, Satiety = 1 };
-        var rules = RuleSet.Parse("R1/W1/B2/P0/Z0/M1/L9/S3/D2/H4");
-
-        var writer = new StringWriter();
-        WorldFile.Save(writer, world, rules);
-        Assert.Contains(" PA5h2s1 ", writer.ToString());
-
-        var loaded = WorldFile.Load(new StringReader(writer.ToString()));
-        var cell = loaded.World[3, 4];
-        Assert.Equal((5, (short)2, (short)1), (cell.AnimalAge, cell.Hunger, cell.Satiety));
-        Assert.True(cell.AnimalId > 0);
-        Assert.Equal(rules, loaded.Rules);
-    }
-
-    [Fact]
     public void Load_ReportsLineNumberOfBadCell()
     {
         var writer = new StringWriter();
