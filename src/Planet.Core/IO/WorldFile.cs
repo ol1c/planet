@@ -23,8 +23,6 @@ public static class WorldFile
 
     public static void Save(TextWriter writer, World world, RuleSet rules)
     {
-        writer.WriteLine("# Planet - zapis ekosystemu");
-        writer.WriteLine("# Pola: . puste, P roślina, A<wiek> zwierzę, PA<wiek> zwierzę na roślinie");
         writer.WriteLine($"RULES {rules}");
         writer.WriteLine($"SIZE {world.Size}");
         writer.WriteLine($"WRAP {(world.Wraps ? 1 : 0)}");
@@ -134,9 +132,9 @@ public static class WorldFile
 
     private static string FormatCell(Cell cell) => cell switch
     {
-        { HasPlant: true, HasAnimal: true } => $"PA{cell.AnimalAge}",
-        { HasAnimal: true } => $"A{cell.AnimalAge}",
-        { HasPlant: true } => "P",
+        { HasPlant: true, HasAnimal: true } => $"RZ{cell.AnimalAge}",
+        { HasAnimal: true } => $"Z{cell.AnimalAge}",
+        { HasPlant: true } => "R",
         _ => ".",
     };
 
@@ -147,7 +145,7 @@ public static class WorldFile
             return true;
 
         var rest = token.AsSpan();
-        if (rest.Length > 0 && char.ToUpperInvariant(rest[0]) == 'P')
+        if (rest.Length > 0 && char.ToUpperInvariant(rest[0]) == 'R')
         {
             cell = cell.WithPlant(true);
             rest = rest[1..];
@@ -155,7 +153,7 @@ public static class WorldFile
         if (rest.IsEmpty)
             return cell.HasPlant;
 
-        if (char.ToUpperInvariant(rest[0]) != 'A')
+        if (char.ToUpperInvariant(rest[0]) != 'Z')
             return false;
         rest = rest[1..];
 

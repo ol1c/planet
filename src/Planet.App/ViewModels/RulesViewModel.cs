@@ -23,7 +23,6 @@ public sealed class RulesViewModel : ObservableObject, INotifyDataErrorInfo
         Load(rules);
     }
 
-    public event EventHandler<RuleSet>? RulesChanged;
     public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
 
     public RuleSet Rules { get; private set; }
@@ -91,7 +90,6 @@ public sealed class RulesViewModel : ObservableObject, INotifyDataErrorInfo
         Rules = rules;
         OnPropertyChanged(nameof(Rules));
         OnPropertyChanged(nameof(RuleString));
-        RulesChanged?.Invoke(this, rules);
     }
 
     private int ValidateNumber(string propertyName, string text, int min, int max)

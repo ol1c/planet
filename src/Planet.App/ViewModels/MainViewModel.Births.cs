@@ -91,17 +91,10 @@ public sealed partial class MainViewModel
     {
         TrackedAnimalId = record.Id;
         FocusZoom();
-        if (_world.TryFindAnimal(record.Id, out var x, out var y, out var cell))
-        {
+        if (_world.TryFindAnimal(record.Id, out var x, out var y, out _))
             CenterOn(x, y);
-            StatusMessage = $"Zwierzę #{record.Id}: pole ({x}, {y}), wiek {cell.AnimalAge}" +
-                            $" · urodzone w kroku {record.Generation} na ({record.X}, {record.Y}).";
-        }
         else
-        {
             CenterOn(record.X, record.Y);
-            StatusMessage = $"Zwierzę #{record.Id} już nie żyje - pokazuję miejsce narodzin ({record.X}, {record.Y}).";
-        }
         UpdateTrackedMarker();
         RefreshViewport();
     }
@@ -120,7 +113,6 @@ public sealed partial class MainViewModel
         try
         {
             BoardImages.SavePng(record.Render(PhotoScale), path);
-            StatusMessage = $"Zapisano zdjęcie otoczenia zwierzęcia #{record.Id}: {path}";
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {

@@ -8,11 +8,11 @@
 
     <Style x:Key="RunButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
         <Setter Property="Content" Value="Start" />
-        <Setter Property="ToolTip" Value="Uruchom animację (F5)" />
+        <Setter Property="ToolTip" Value="Uruchom animację" />
         <Style.Triggers>
             <DataTrigger Binding="{Binding IsRunning}" Value="True">
                 <Setter Property="Content" Value="Stop" />
-                <Setter Property="ToolTip" Value="Zatrzymaj animację i wróć do edycji (F5)" />
+                <Setter Property="ToolTip" Value="Zatrzymaj animację i wróć do edycji" />
             </DataTrigger>
         </Style.Triggers>
     </Style>
@@ -72,28 +72,6 @@
 
     <Style TargetType="CheckBox">
         <Setter Property="Margin" Value="0,2,0,8" />
-    </Style>
-
-    <Style x:Key="RunIndicatorStyle" TargetType="Ellipse">
-        <Setter Property="Width" Value="10" />
-        <Setter Property="Height" Value="10" />
-        <Setter Property="Fill" Value="{StaticResource MutedTextBrush}" />
-        <Setter Property="Opacity" Value="0.4" />
-        <Style.Triggers>
-            <DataTrigger Binding="{Binding IsRunning}" Value="True">
-                <Setter Property="Fill" Value="{StaticResource PlantBrush}" />
-                <DataTrigger.EnterActions>
-                    <BeginStoryboard x:Name="PulseStoryboard">
-                        <Storyboard RepeatBehavior="Forever" AutoReverse="True">
-                            <DoubleAnimation Storyboard.TargetProperty="Opacity" From="1" To="0.2" Duration="0:0:0.6" />
-                        </Storyboard>
-                    </BeginStoryboard>
-                </DataTrigger.EnterActions>
-                <DataTrigger.ExitActions>
-                    <StopStoryboard BeginStoryboardName="PulseStoryboard" />
-                </DataTrigger.ExitActions>
-            </DataTrigger>
-        </Style.Triggers>
     </Style>
 
 </ResourceDictionary>

@@ -38,7 +38,6 @@ public sealed partial class MainViewModel
         {
             var side = size * scale;
             BoardImages.SavePng(BoardImages.CreateBitmap(WorldRasterizer.Rasterize(_world, x, y, size, scale), side, side), path);
-            StatusMessage = $"Zapisano obraz {side}×{side} px: {path}";
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {

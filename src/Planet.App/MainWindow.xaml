@@ -13,23 +13,6 @@
         Width="1360" Height="900" MinWidth="1000" MinHeight="660"
         WindowStartupLocation="CenterScreen">
 
-    <Window.InputBindings>
-        <KeyBinding Key="F5" Command="{Binding ToggleRunCommand}" />
-        <KeyBinding Key="F6" Command="{Binding StepCommand}" />
-        <KeyBinding Key="N" Modifiers="Control" Command="{Binding NewBoardCommand}" />
-        <KeyBinding Key="O" Modifiers="Control" Command="{Binding OpenCommand}" />
-        <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveCommand}" />
-        <KeyBinding Key="E" Modifiers="Control" Command="{Binding ExportImageCommand}" />
-        <KeyBinding Key="D1" Modifiers="Control" Command="{Binding ShowWholeBoardCommand}" />
-        <KeyBinding Key="D2" Modifiers="Control" Command="{Binding ZoomPresetCommand}">
-            <KeyBinding.CommandParameter><sys:Int32>20</sys:Int32></KeyBinding.CommandParameter>
-        </KeyBinding>
-        <KeyBinding Key="OemPlus" Modifiers="Control" Command="{Binding ZoomInCommand}" />
-        <KeyBinding Key="Add" Modifiers="Control" Command="{Binding ZoomInCommand}" />
-        <KeyBinding Key="OemMinus" Modifiers="Control" Command="{Binding ZoomOutCommand}" />
-        <KeyBinding Key="Subtract" Modifiers="Control" Command="{Binding ZoomOutCommand}" />
-    </Window.InputBindings>
-
     <Window.Resources>
         <Style x:Key="BitmapLevelStyle" TargetType="FrameworkElement">
             <Style.Triggers>
@@ -69,40 +52,34 @@
 
     <DockPanel>
         <Menu DockPanel.Dock="Top">
-            <MenuItem Header="_Plik">
-                <MenuItem Header="_Nowa plansza" Command="{Binding NewBoardCommand}" InputGestureText="Ctrl+N" />
-                <MenuItem Header="_Otwórz…" Command="{Binding OpenCommand}" InputGestureText="Ctrl+O" />
-                <MenuItem Header="_Zapisz…" Command="{Binding SaveCommand}" InputGestureText="Ctrl+S" />
+            <MenuItem Header="Plik">
+                <MenuItem Header="Nowa plansza" Command="{Binding NewBoardCommand}" />
+                <MenuItem Header="Otwórz…" Command="{Binding OpenCommand}" />
+                <MenuItem Header="Zapisz…" Command="{Binding SaveCommand}" />
                 <Separator />
-                <MenuItem Header="Zapisz _obraz (PNG)…" Command="{Binding ExportImageCommand}" InputGestureText="Ctrl+E" />
+                <MenuItem Header="Zapisz obraz (PNG)…" Command="{Binding ExportImageCommand}" />
                 <Separator />
-                <MenuItem Header="Za_kończ" Click="OnExitClick" />
+                <MenuItem Header="Zakończ" Click="OnExitClick" />
             </MenuItem>
-            <MenuItem Header="_Symulacja">
-                <MenuItem Header="Start / Stop" Command="{Binding ToggleRunCommand}" InputGestureText="F5" />
-                <MenuItem Header="Jeden _krok" Command="{Binding StepCommand}" InputGestureText="F6" />
+            <MenuItem Header="Symulacja">
+                <MenuItem Header="Start / Stop" Command="{Binding ToggleRunCommand}" />
+                <MenuItem Header="Jeden krok" Command="{Binding StepCommand}" />
                 <Separator />
-                <MenuItem Header="_Wyczyść planszę" Command="{Binding ClearCommand}" />
-                <MenuItem Header="_Losuj stan" Command="{Binding RandomizeCommand}" />
-                <MenuItem Header="_Domyślne reguły" Command="{Binding ResetRulesCommand}" />
+                <MenuItem Header="Wyczyść planszę" Command="{Binding ClearCommand}" />
+                <MenuItem Header="Losuj stan" Command="{Binding RandomizeCommand}" />
+                <MenuItem Header="Domyślne reguły" Command="{Binding ResetRulesCommand}" />
             </MenuItem>
-            <MenuItem Header="_Widok">
-                <MenuItem Header="_Cała plansza" Command="{Binding ShowWholeBoardCommand}" InputGestureText="Ctrl+1" />
-                <MenuItem Header="_Powiększenie 20x20" Command="{Binding ZoomPresetCommand}" InputGestureText="Ctrl+2">
+            <MenuItem Header="Widok">
+                <MenuItem Header="Cała plansza" Command="{Binding ShowWholeBoardCommand}" />
+                <MenuItem Header="Powiększenie 20x20" Command="{Binding ZoomPresetCommand}">
                     <MenuItem.CommandParameter><sys:Int32>20</sys:Int32></MenuItem.CommandParameter>
                 </MenuItem>
-                <MenuItem Header="Przybliż" Command="{Binding ZoomInCommand}" InputGestureText="Ctrl++" />
-                <MenuItem Header="Oddal" Command="{Binding ZoomOutCommand}" InputGestureText="Ctrl+-" />
+                <MenuItem Header="Przybliż" Command="{Binding ZoomInCommand}" />
+                <MenuItem Header="Oddal" Command="{Binding ZoomOutCommand}" />
             </MenuItem>
         </Menu>
 
         <StatusBar DockPanel.Dock="Bottom">
-            <StatusBarItem>
-                <StackPanel Orientation="Horizontal">
-                    <Ellipse Style="{StaticResource RunIndicatorStyle}" Margin="0,0,8,0" />
-                    <TextBlock Text="{Binding StatusMessage}" TextTrimming="CharacterEllipsis" MaxWidth="640" />
-                </StackPanel>
-            </StatusBarItem>
             <StatusBarItem HorizontalAlignment="Right">
                 <TextBlock Foreground="{StaticResource MutedTextBrush}">
                     <Run Text="Plansza" /> <Run Text="{Binding BoardSize, Mode=OneWay}" />x<Run Text="{Binding BoardSize, Mode=OneWay}" />
@@ -142,7 +119,7 @@
                                     <TextBlock Text="Symulacja" Style="{StaticResource SectionHeaderStyle}" />
                                     <WrapPanel>
                                         <Button Style="{StaticResource RunButtonStyle}" Command="{Binding ToggleRunCommand}" MinWidth="96" />
-                                        <Button Content="Krok" Command="{Binding StepCommand}" ToolTip="Jeden krok symulacji (F6)" />
+                                        <Button Content="Krok" Command="{Binding StepCommand}" ToolTip="Jeden krok symulacji" />
                                     </WrapPanel>
                                     <Grid>
                                         <Grid.ColumnDefinitions>
@@ -173,7 +150,7 @@
                             <Border Style="{StaticResource SectionStyle}" IsEnabled="{Binding IsEditing}">
                                 <StackPanel>
                                     <TextBlock Text="Edycja" Style="{StaticResource SectionHeaderStyle}" />
-                                    <TextBlock Text="LPM - postaw, PPM - usuń. W widoku bitmapowym można malować przeciągając."
+                                    <TextBlock Text="LPM - postaw, PPM - usuń"
                                                TextWrapping="Wrap" Foreground="{StaticResource MutedTextBrush}" Margin="0,0,0,8" />
                                     <WrapPanel>
                                         <RadioButton GroupName="Tool" Content="Roślina"
@@ -225,10 +202,10 @@
                                     <TextBlock Foreground="{StaticResource MutedTextBrush}" Margin="0,0,0,4">
                                         <Run Text="Dozwolony bok: " /><Run Text="{Binding Source={x:Static core:World.MinSize}, Mode=OneTime}" /><Run Text="-" /><Run Text="{Binding Source={x:Static core:World.MaxSize}, Mode=OneTime}" /><Run Text=" pól" />
                                     </TextBlock>
-                                    <CheckBox Content="Zawijanie krawędzi (torus)" IsChecked="{Binding Wraps}" />
+                                    <CheckBox Content="Zawijanie krawędzi" IsChecked="{Binding Wraps}" />
                                     <WrapPanel>
-                                        <Button Content="Otwórz…" Command="{Binding OpenCommand}" />
-                                        <Button Content="Zapisz…" Command="{Binding SaveCommand}" />
+                                        <Button Content="Otwórz" Command="{Binding OpenCommand}" />
+                                        <Button Content="Zapisz" Command="{Binding SaveCommand}" />
                                     </WrapPanel>
                                 </StackPanel>
                             </Border>
@@ -254,31 +231,31 @@
 
                                     <TextBlock Grid.Row="0" Text="R" Style="{StaticResource ValueStyle}" HorizontalAlignment="Left" VerticalAlignment="Center" />
                                     <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding PlantBirth, UpdateSourceTrigger=PropertyChanged}" />
-                                    <TextBlock Grid.Row="0" Grid.Column="2" Text="roślin: nowa roślina" Style="{StaticResource LabelStyle}" />
+                                    <TextBlock Grid.Row="0" Grid.Column="2" Text="nowa roślina" Style="{StaticResource LabelStyle}" />
 
                                     <TextBlock Grid.Row="1" Text="W" Style="{StaticResource ValueStyle}" HorizontalAlignment="Left" VerticalAlignment="Center" />
                                     <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding PlantSurvival, UpdateSourceTrigger=PropertyChanged}" />
-                                    <TextBlock Grid.Row="1" Grid.Column="2" Text="roślin: roślina przeżywa" Style="{StaticResource LabelStyle}" />
+                                    <TextBlock Grid.Row="1" Grid.Column="2" Text="roślina wegetuje" Style="{StaticResource LabelStyle}" />
 
                                     <TextBlock Grid.Row="2" Text="B" Style="{StaticResource ValueStyle}" HorizontalAlignment="Left" VerticalAlignment="Center" />
                                     <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding AnimalBirth, UpdateSourceTrigger=PropertyChanged}" />
-                                    <TextBlock Grid.Row="2" Grid.Column="2" Text="zwierząt: narodziny" Style="{StaticResource LabelStyle}" />
+                                    <TextBlock Grid.Row="2" Grid.Column="2" Text="nowe zwierzę (zwierzęta)" Style="{StaticResource LabelStyle}" />
 
                                     <TextBlock Grid.Row="3" Text="P" Style="{StaticResource ValueStyle}" HorizontalAlignment="Left" VerticalAlignment="Center" />
                                     <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding AnimalBirthPlants, UpdateSourceTrigger=PropertyChanged}" />
-                                    <TextBlock Grid.Row="3" Grid.Column="2" Text="roślin przy narodzinach" Style="{StaticResource LabelStyle}" />
+                                    <TextBlock Grid.Row="3" Grid.Column="2" Text="nowe zwierzę (rośliny)" Style="{StaticResource LabelStyle}" />
 
                                     <TextBlock Grid.Row="4" Text="Z" Style="{StaticResource ValueStyle}" HorizontalAlignment="Left" VerticalAlignment="Center" />
                                     <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding AnimalSurvival, UpdateSourceTrigger=PropertyChanged}" />
-                                    <TextBlock Grid.Row="4" Grid.Column="2" Text="sąsiednich zwierząt: przeżywa" Style="{StaticResource LabelStyle}" />
+                                    <TextBlock Grid.Row="4" Grid.Column="2" Text="sąsiednich zwierząt aby przeżyć" Style="{StaticResource LabelStyle}" />
 
                                     <TextBlock Grid.Row="5" Text="M" Style="{StaticResource ValueStyle}" HorizontalAlignment="Left" VerticalAlignment="Center" />
                                     <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding MoveRange, UpdateSourceTrigger=PropertyChanged}" />
-                                    <TextBlock Grid.Row="5" Grid.Column="2" Text="zasięg skoku (pola)" Style="{StaticResource LabelStyle}" />
+                                    <TextBlock Grid.Row="5" Grid.Column="2" Text="zasięg ruchu" Style="{StaticResource LabelStyle}" />
 
                                     <TextBlock Grid.Row="6" Text="L" Style="{StaticResource ValueStyle}" HorizontalAlignment="Left" VerticalAlignment="Center" />
                                     <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding Lifespan, UpdateSourceTrigger=PropertyChanged}" />
-                                    <TextBlock Grid.Row="6" Grid.Column="2" Text="długość życia (kroki)" Style="{StaticResource LabelStyle}" />
+                                    <TextBlock Grid.Row="6" Grid.Column="2" Text="długość życia" Style="{StaticResource LabelStyle}" />
 
                                 </Grid>
                                 <TextBlock Text="{Binding RuleString}" FontFamily="Consolas" Foreground="{StaticResource MutedTextBrush}"
@@ -311,7 +288,7 @@
                                 <TextBlock Grid.Row="2" Text="Zwierzęta" Style="{StaticResource LabelStyle}" />
                                 <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding Animals}" Style="{StaticResource ValueStyle}" Foreground="{StaticResource AnimalBrush}" />
 
-                                <TextBlock Grid.Row="3" Grid.Column="1" Text="ost. krok" Style="{StaticResource LabelStyle}" HorizontalAlignment="Right" Margin="0,8,4,4" />
+                                <TextBlock Grid.Row="3" Grid.Column="1" Text="ostatni krok" Style="{StaticResource LabelStyle}" HorizontalAlignment="Right" Margin="0,8,4,4" />
                                 <TextBlock Grid.Row="3" Grid.Column="2" Text="łącznie" Style="{StaticResource LabelStyle}" HorizontalAlignment="Right" Margin="0,8,4,4" />
 
                                 <TextBlock Grid.Row="4" Text="Narodziny zwierząt" Style="{StaticResource LabelStyle}" />
@@ -359,7 +336,7 @@
                                     <Button Content="Nie śledź" Command="{Binding StopTrackingCommand}" />
                                 </WrapPanel>
                                 <TextBlock TextWrapping="Wrap" Foreground="{StaticResource MutedTextBrush}" Margin="0,0,0,6">
-                                    <Run Text="Kliknij wpis, aby przejść do zwierzęcia i je zaznaczyć. Zaznaczenie znika po kolejnym kroku, chyba że włączone jest śledzenie nowych narodzin. Miniatura to otoczenie 15x15 w chwili narodzin. Lista trzyma" />
+                                    <Run Text="Lista trzyma" />
                                     <Run Text="{Binding Source={x:Static vm:MainViewModel.MaxBirthRecords}, Mode=OneTime}" /><Run Text=" najnowszych wpisów." />
                                 </TextBlock>
                             </StackPanel>
@@ -376,14 +353,14 @@
                             <Border Style="{StaticResource SectionStyle}">
                                 <StackPanel>
                                     <TextBlock Text="Obszar" Style="{StaticResource SectionHeaderStyle}" />
-                                    <CheckBox Content="Tylko widoczny fragment (zamiast całej planszy)" IsChecked="{Binding ExportVisibleOnly}" />
+                                    <CheckBox Content="Tylko widoczny fragment" IsChecked="{Binding ExportVisibleOnly}" />
                                 </StackPanel>
                             </Border>
                             <Border Style="{StaticResource SectionStyle}">
                                 <StackPanel>
                                     <TextBlock Text="Obraz" Style="{StaticResource SectionHeaderStyle}" />
                                     <Button Content="Zapisz obraz PNG…" Command="{Binding ExportImageCommand}" HorizontalAlignment="Left"
-                                            ToolTip="Bieżący stan planszy jako obraz (Ctrl+E)" />
+                                            ToolTip="Bieżący stan planszy jako obraz" />
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -405,11 +382,11 @@
                 </Grid.ColumnDefinitions>
 
                 <DockPanel Grid.ColumnSpan="2" Margin="0,0,0,8">
-                    <Button DockPanel.Dock="Left" Content="-" Command="{Binding ZoomOutCommand}" ToolTip="Oddal (Ctrl+-)" MinWidth="32" />
-                    <Button DockPanel.Dock="Right" Content="Cała plansza" Command="{Binding ShowWholeBoardCommand}" ToolTip="Ctrl+1" />
+                    <Button DockPanel.Dock="Left" Content="-" Command="{Binding ZoomOutCommand}" ToolTip="Oddal" MinWidth="32" />
+                    <Button DockPanel.Dock="Right" Content="Cała plansza" Command="{Binding ShowWholeBoardCommand}" />
                     <TextBlock DockPanel.Dock="Right" Text="{Binding ZoomDescription}" Width="230" VerticalAlignment="Center"
                                Foreground="{StaticResource MutedTextBrush}" Margin="8,0,8,6" />
-                    <Button DockPanel.Dock="Right" Content="+" Command="{Binding ZoomInCommand}" ToolTip="Przybliż (Ctrl++)" MinWidth="32" />
+                    <Button DockPanel.Dock="Right" Content="+" Command="{Binding ZoomInCommand}" ToolTip="Przybliż" MinWidth="32" />
                     <Slider Minimum="{Binding Source={x:Static vm:MainViewModel.MinZoomSize}, Mode=OneTime}" Maximum="{Binding MaxZoomSize}"
                             Value="{Binding ZoomSize}" IsDirectionReversed="True" TickFrequency="1" IsSnapToTickEnabled="True"
                             ToolTip="Przybliżenie - kółko myszy nad planszą też zmienia zoom" />

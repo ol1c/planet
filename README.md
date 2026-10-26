@@ -46,7 +46,7 @@ planet/
 │       ├── MainWindow.xaml(.cs)       układ okna; code-behind obsługuje tylko kółko myszy i przesuwanie
 │       ├── Themes/
 │       │   ├── Colors.xaml            paleta kolorów (wspólna dla widoku, PNG i miniatur)
-│       │   ├── Controls.xaml          proste style kontrolek (marginesy), Start↔Stop, szablon błędu walidacji, wskaźnik pracy
+│       │   ├── Controls.xaml          proste style kontrolek (marginesy), Start↔Stop, szablon błędu walidacji
 │       │   └── Board.xaml             kształty roślin i zwierząt, szablon pola, styl widoku bitmapowego
 │       ├── Controls/
 │       │   └── WorldBitmapView.cs     kontrolka rysująca planszę lub jej fragment jako bitmapę (widok i minimapa)
@@ -110,12 +110,12 @@ Panel boczny ma stałą minimapę i zakładki **Symulacja**, **Reguły**, **Stat
 | Rozmiar planszy | *Symulacja → Plansza*: bok od 50 do 1000 |
 | Duże plansze | suwak **Kroków na klatkę** (1-50) liczy kilka kroków między odświeżeniami widoku; krok 1000×1000 trwa ok. 60 ms (kompilacja Release) |
 | Edycja | narzędzie **Roślina / Zwierzę / Gumka**; LPM stawia, PPM usuwa; w widoku bitmapowym można malować przeciągając |
-| Krok / animacja | **Krok** (F6), **Start/Stop** (F5), suwak prędkości; po zatrzymaniu wraca tryb edycji |
-| Płynny zoom | suwak nad planszą (bok fragmentu od 10 pól do całej planszy), **kółko myszy** (punkt pod kursorem zostaje w miejscu), `Ctrl +`/`Ctrl −`, **Cała plansza** (Ctrl+1) |
+| Krok / animacja | **Krok**, **Start/Stop**, suwak prędkości; po zatrzymaniu wraca tryb edycji |
+| Płynny zoom | suwak nad planszą (bok fragmentu od 10 pól do całej planszy), **kółko myszy** (punkt pod kursorem zostaje w miejscu), przyciski **−**/**+**, **Cała plansza** |
 | Zmiana wyglądu przy zoomie | powyżej **40×40** pól widok jest bitmapą (siatka pojawia się od ok. 6 px na pole); od 40×40 w dół pola rysuje DataTemplate z kształtami liści i zwierząt oraz animacjami |
 | Przesuwanie | paski przewijania, **środkowy przycisk myszy** (przeciąganie), kliknięcie w minimapę |
-| Zapis i odczyt | Ctrl+S / Ctrl+O; plik zawiera planszę i reguły |
-| Obraz | *Eksport → Zapisz obraz PNG* (Ctrl+E): cała plansza albo tylko widoczny fragment |
+| Zapis i odczyt | *Plik → Otwórz / Zapisz* albo przyciski w sekcji Plansza; plik zawiera planszę i reguły |
+| Obraz | *Eksport → Zapisz obraz PNG*: cała plansza albo tylko widoczny fragment |
 | Narodziny | *Narodziny*: lista ostatnich 200 urodzonych zwierząt z miniaturą otoczenia 15×15 z chwili narodzin |
 | Przejście do zwierzęcia | kliknięcie wpisu: zoom do 21×21 i wyśrodkowanie na zwierzęciu (lub na miejscu narodzin, jeśli już nie żyje); zwierzę dostaje niebieską ramkę, a na minimapie kółko. Po kolejnym kroku zaznaczenie znika (jak po **Nie śledź**), chyba że zaznaczone jest **Śledź nowe narodziny** |
 | Kolejne egzemplarze | **Nowsze / Starsze**; **Śledź nowe narodziny**: podczas animacji widok sam przechodzi do najnowszego zwierzęcia |
@@ -131,10 +131,10 @@ SIZE 60
 WRAP 1
 GENERATION 0
 GRID
-. P A3 PA0 A5 . P ...        ← SIZE wierszy po SIZE pól
+. R Z3 RZ0 Z5 . R ...        ← SIZE wierszy po SIZE pól
 ```
 
-Pola: `.` puste, `P` roślina, `A<wiek>` zwierzę, `PA<wiek>` zwierzę na roślinie. Identyfikatory zwierząt nie są
+Pola: `.` puste, `R` roślina, `Z<wiek>` zwierzę, `RZ<wiek>` zwierzę na roślinie. Identyfikatory zwierząt nie są
 zapisywane, przy odczycie dostają nowe numery. Przy błędzie odczytu aplikacja podaje numer linii.
 
 ## Wykorzystane mechanizmy WPF
@@ -147,10 +147,10 @@ zapisywane, przy odczycie dostają nowe numery. Przy błędzie odczytu aplikacja
 | **ControlTemplate** | pole planszy (`CellButtonStyle`), szablon błędu walidacji; pozostałe kontrolki (przyciski, zakładki, RadioButton) mają standardowy wygląd WPF |
 | **DataTemplate** | `CellTemplate` (pole w widoku szczegółowym), `BirthTemplate` (wpis listy narodzin z miniaturą) |
 | **Triggery** | `Trigger` (Validation.HasError), `MultiTrigger` (IsMouseOver + IsEnabled na polu planszy), `DataTrigger` (zawartość pola, śledzone zwierzę, Start↔Stop, poziom szczegółowości przy zoomie), `MultiDataTrigger` |
-| **Animacje (Storyboard)** | pojawienie się nowego zwierzęcia (ScaleTransform + BackEase), wyłanianie rośliny i pulsujący wskaźnik pracy |
+| **Animacje (Storyboard)** | pojawienie się nowego zwierzęcia (ScaleTransform + BackEase) i wyłanianie rośliny |
 | **Walidacja** | `INotifyDataErrorInfo` w `RulesViewModel` + `Validation.ErrorTemplate` |
 | **Własna kontrolka** | `WorldBitmapView`: właściwości zależnościowe, `OnRender`, `WriteableBitmap`, fragment planszy, siatka, znacznik, mysz → `ICommand` |
-| **InputBindings** | skróty klawiszowe, PPM na polu (`MouseBinding`) |
+| **InputBindings** | PPM na polu usuwa zawartość (`MouseBinding`) |
 
 ### Jak zmienić wygląd
 

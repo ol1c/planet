@@ -25,7 +25,6 @@ public sealed partial class MainViewModel : ObservableObject
     private double _plantDensity = 0.3;
     private double _animalDensity = 0.05;
     private int _renderVersion;
-    private string _statusMessage = "Tryb edycji - kliknij pole, aby postawić roślinę lub zwierzę.";
     private string? _currentFile;
 
     public MainViewModel(IDialogService dialogs)
@@ -33,7 +32,6 @@ public sealed partial class MainViewModel : ObservableObject
         _dialogs = dialogs;
         _world = new World(_newBoardSize);
         Rules = new RulesViewModel(RuleSet.Default);
-        Rules.RulesChanged += (_, _) => StatusMessage = $"Reguły: {Rules.RuleString}";
 
         _timer = new DispatcherTimer(DispatcherPriority.Background);
         _timer.Tick += (_, _) => DoSteps(StepsPerTick);
@@ -129,8 +127,6 @@ public sealed partial class MainViewModel : ObservableObject
     public double PlantDensity { get => _plantDensity; set => SetProperty(ref _plantDensity, Math.Clamp(value, 0, 1)); }
     public double AnimalDensity { get => _animalDensity; set => SetProperty(ref _animalDensity, Math.Clamp(value, 0, 1)); }
 
-    public string StatusMessage { get => _statusMessage; private set => SetProperty(ref _statusMessage, value); }
-
     public ICommand ToggleRunCommand { get; }
     public ICommand StepCommand { get; }
     public ICommand ClearCommand { get; }
@@ -151,13 +147,11 @@ public sealed partial class MainViewModel : ObservableObject
         {
             _timer.Stop();
             IsRunning = false;
-            StatusMessage = "Zatrzymano - tryb edycji.";
         }
         else
         {
             IsRunning = true;
             _timer.Start();
-            StatusMessage = "Symulacja trwa…";
         }
     }
 
@@ -180,7 +174,6 @@ public sealed partial class MainViewModel : ObservableObject
         _world.Clear();
         ResetHistory();
         Refresh();
-        StatusMessage = "Plansza wyczyszczona.";
     }
 
     private void Randomize()
@@ -188,14 +181,9 @@ public sealed partial class MainViewModel : ObservableObject
         WorldGenerator.Randomize(_world, PlantDensity, AnimalDensity, Rules.Rules.Lifespan);
         ResetHistory();
         Refresh();
-        StatusMessage = "Wylosowano nowy stan planszy.";
     }
 
-    private void NewBoard()
-    {
-        ReplaceWorld(new World(NewBoardSize, Wraps));
-        StatusMessage = $"Nowa plansza {BoardSize}×{BoardSize}.";
-    }
+    private void NewBoard() => ReplaceWorld(new World(NewBoardSize, Wraps));
 
     private void Save()
     {
@@ -205,7 +193,6 @@ public sealed partial class MainViewModel : ObservableObject
         {
             WorldFile.Save(path, _world, Rules.Rules);
             _currentFile = path;
-            StatusMessage = $"Zapisano: {path}";
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
@@ -223,7 +210,6 @@ public sealed partial class MainViewModel : ObservableObject
             Rules.Load(document.Rules);
             ReplaceWorld(document.World);
             _currentFile = path;
-            StatusMessage = $"Wczytano: {path}";
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or FormatException)
         {

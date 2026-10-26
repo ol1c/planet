@@ -39,7 +39,7 @@ public class WorldFileTests
         WorldFile.Save(writer, world, RuleSet.Default);
 
         Assert.Contains("RULES R1234/W123456/B23/P01/Z0123/M2/L10", writer.ToString());
-        Assert.Contains("\nP A3 PA7 . .", writer.ToString().ReplaceLineEndings("\n"));
+        Assert.Contains("\nR Z3 RZ7 . .", writer.ToString().ReplaceLineEndings("\n"));
     }
 
     [Fact]
