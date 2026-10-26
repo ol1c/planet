@@ -9,7 +9,7 @@
         xmlns:sys="clr-namespace:System;assembly=System.Runtime"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
-        Title="Planet - symulator ekosystemu"
+        Title="Oliwier Komorowski 197808"
         Width="1360" Height="900" MinWidth="1000" MinHeight="660"
         WindowStartupLocation="CenterScreen"
         Background="{StaticResource WindowBackgroundBrush}"
