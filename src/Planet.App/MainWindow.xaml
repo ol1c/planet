@@ -11,9 +11,7 @@
         d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
         Title="Oliwier Komorowski 197808"
         Width="1360" Height="900" MinWidth="1000" MinHeight="660"
-        WindowStartupLocation="CenterScreen"
-        Background="{StaticResource WindowBackgroundBrush}"
-        Foreground="{StaticResource TextBrush}">
+        WindowStartupLocation="CenterScreen">
 
     <Window.InputBindings>
         <KeyBinding Key="F5" Command="{Binding ToggleRunCommand}" />
@@ -70,7 +68,7 @@
     </Window.Resources>
 
     <DockPanel>
-        <Menu DockPanel.Dock="Top" Padding="4,2" Background="{StaticResource PanelBackgroundBrush}">
+        <Menu DockPanel.Dock="Top">
             <MenuItem Header="_Plik">
                 <MenuItem Header="_Nowa plansza" Command="{Binding NewBoardCommand}" InputGestureText="Ctrl+N" />
                 <MenuItem Header="_Otwórz…" Command="{Binding OpenCommand}" InputGestureText="Ctrl+O" />
@@ -98,7 +96,7 @@
             </MenuItem>
         </Menu>
 
-        <StatusBar DockPanel.Dock="Bottom" Background="{StaticResource PanelBackgroundBrush}" Padding="8,2">
+        <StatusBar DockPanel.Dock="Bottom">
             <StatusBarItem>
                 <StackPanel Orientation="Horizontal">
                     <Ellipse Style="{StaticResource RunIndicatorStyle}" Margin="0,0,8,0" />
@@ -178,11 +176,11 @@
                                     <TextBlock Text="LPM - postaw, PPM - usuń. W widoku bitmapowym można malować przeciągając."
                                                TextWrapping="Wrap" Foreground="{StaticResource MutedTextBrush}" Margin="0,0,0,8" />
                                     <WrapPanel>
-                                        <RadioButton Style="{StaticResource SegmentRadioStyle}" GroupName="Tool" Content="Roślina"
+                                        <RadioButton GroupName="Tool" Content="Roślina"
                                                      IsChecked="{Binding Tool, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Plant}" />
-                                        <RadioButton Style="{StaticResource SegmentRadioStyle}" GroupName="Tool" Content="Zwierzę"
+                                        <RadioButton GroupName="Tool" Content="Zwierzę"
                                                      IsChecked="{Binding Tool, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Animal}" />
-                                        <RadioButton Style="{StaticResource SegmentRadioStyle}" GroupName="Tool" Content="Gumka"
+                                        <RadioButton GroupName="Tool" Content="Gumka"
                                                      IsChecked="{Binding Tool, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Erase}" />
                                     </WrapPanel>
                                     <Grid Margin="0,4,0,0">

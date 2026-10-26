@@ -46,7 +46,7 @@ planet/
 │       ├── MainWindow.xaml(.cs)       układ okna; code-behind obsługuje tylko kółko myszy i przesuwanie
 │       ├── Themes/
 │       │   ├── Colors.xaml            paleta kolorów (wspólna dla widoku, PNG i miniatur)
-│       │   ├── Controls.xaml          style i szablony przycisków, zakładek, pól tekstowych, wskaźników
+│       │   ├── Controls.xaml          proste style kontrolek (marginesy), Start↔Stop, szablon błędu walidacji, wskaźnik pracy
 │       │   └── Board.xaml             kształty roślin i zwierząt, szablon pola, styl widoku bitmapowego
 │       ├── Controls/
 │       │   └── WorldBitmapView.cs     kontrolka rysująca planszę lub jej fragment jako bitmapę (widok i minimapa)
@@ -143,10 +143,10 @@ zapisywane, przy odczycie dostają nowe numery. Przy błędzie odczytu aplikacja
 |---|---|
 | **MVVM, binding, komendy** | `MainViewModel` (klasa częściowa w 4 plikach) i `RelayCommand`; okno jest wiązane do view-modelu |
 | **Zasoby** | `Themes/Colors.xaml`: kolory i pędzle (również dla PNG i miniatur); `Themes/Board.xaml`: kształty i rozmiar pola |
-| **Style** | przyciski, przełączniki, zakładki, pola tekstowe, sekcje; styl `WorldBitmapView` przekazuje paletę do bitmapy |
-| **ControlTemplate** | przyciski, RadioButton jako przełącznik, `TabItem`, pole planszy (`CellButtonStyle`), szablon błędu walidacji |
+| **Style** | style niejawne (marginesy przycisków, pól, suwaków), `RunButtonStyle` (BasedOn), sekcje, etykiety; styl `WorldBitmapView` przekazuje paletę do bitmapy |
+| **ControlTemplate** | pole planszy (`CellButtonStyle`), szablon błędu walidacji; pozostałe kontrolki (przyciski, zakładki, RadioButton) mają standardowy wygląd WPF |
 | **DataTemplate** | `CellTemplate` (pole w widoku szczegółowym), `BirthTemplate` (wpis listy narodzin z miniaturą) |
-| **Triggery** | `Trigger` (IsMouseOver, IsPressed, IsSelected, Validation.HasError), `MultiTrigger`, `DataTrigger` (zawartość pola, śledzone zwierzę, Start↔Stop, poziom szczegółowości przy zoomie), `MultiDataTrigger` |
+| **Triggery** | `Trigger` (Validation.HasError), `MultiTrigger` (IsMouseOver + IsEnabled na polu planszy), `DataTrigger` (zawartość pola, śledzone zwierzę, Start↔Stop, poziom szczegółowości przy zoomie), `MultiDataTrigger` |
 | **Animacje (Storyboard)** | pojawienie się nowego zwierzęcia (ScaleTransform + BackEase), wyłanianie rośliny i pulsujący wskaźnik pracy |
 | **Walidacja** | `INotifyDataErrorInfo` w `RulesViewModel` + `Validation.ErrorTemplate` |
 | **Własna kontrolka** | `WorldBitmapView`: właściwości zależnościowe, `OnRender`, `WriteableBitmap`, fragment planszy, siatka, znacznik, mysz → `ICommand` |

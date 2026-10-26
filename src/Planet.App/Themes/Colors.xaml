@@ -12,18 +12,9 @@
     <Color x:Key="HighlightColor">#FF2F6FDE</Color>
     <Color x:Key="GridLineColor">#30000000</Color>
 
-    <Color x:Key="WindowBackgroundColor">#FFF7F7F9</Color>
-    <Color x:Key="PanelBackgroundColor">#FFFFFFFF</Color>
-    <Color x:Key="PanelBorderColor">#FFE1E3E8</Color>
-    <Color x:Key="AccentColor">#FF2F6FDE</Color>
-    <Color x:Key="AccentHoverColor">#FF2559B5</Color>
-    <Color x:Key="AccentPressedColor">#FF1C4590</Color>
+    <Color x:Key="PanelBorderColor">#FFABADB3</Color>
     <Color x:Key="DangerColor">#FFD7263D</Color>
-    <Color x:Key="TextColor">#FF1F2430</Color>
     <Color x:Key="MutedTextColor">#FF6B7280</Color>
-    <Color x:Key="ButtonColor">#FFEDEFF3</Color>
-    <Color x:Key="ButtonHoverColor">#FFDDE1E8</Color>
-    <Color x:Key="ButtonPressedColor">#FFC9CED8</Color>
 
     <SolidColorBrush x:Key="EmptyCellBrush" Color="{StaticResource EmptyCellColor}" />
     <SolidColorBrush x:Key="PlantBrush" Color="{StaticResource PlantColor}" />
@@ -35,17 +26,8 @@
     <SolidColorBrush x:Key="HighlightBrush" Color="{StaticResource HighlightColor}" />
     <SolidColorBrush x:Key="GridLineBrush" Color="{StaticResource GridLineColor}" />
 
-    <SolidColorBrush x:Key="WindowBackgroundBrush" Color="{StaticResource WindowBackgroundColor}" />
-    <SolidColorBrush x:Key="PanelBackgroundBrush" Color="{StaticResource PanelBackgroundColor}" />
     <SolidColorBrush x:Key="PanelBorderBrush" Color="{StaticResource PanelBorderColor}" />
-    <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}" />
-    <SolidColorBrush x:Key="AccentHoverBrush" Color="{StaticResource AccentHoverColor}" />
-    <SolidColorBrush x:Key="AccentPressedBrush" Color="{StaticResource AccentPressedColor}" />
     <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}" />
-    <SolidColorBrush x:Key="TextBrush" Color="{StaticResource TextColor}" />
     <SolidColorBrush x:Key="MutedTextBrush" Color="{StaticResource MutedTextColor}" />
-    <SolidColorBrush x:Key="ButtonBrush" Color="{StaticResource ButtonColor}" />
-    <SolidColorBrush x:Key="ButtonHoverBrush" Color="{StaticResource ButtonHoverColor}" />
-    <SolidColorBrush x:Key="ButtonPressedBrush" Color="{StaticResource ButtonPressedColor}" />
 
 </ResourceDictionary>

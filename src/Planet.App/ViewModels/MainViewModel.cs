@@ -59,8 +59,6 @@ public sealed partial class MainViewModel : ObservableObject
         Refresh();
     }
 
-    #region Właściwości
-
     public RulesViewModel Rules { get; }
 
     public StatisticsViewModel Statistics { get; } = new();
@@ -133,10 +131,6 @@ public sealed partial class MainViewModel : ObservableObject
 
     public string StatusMessage { get => _statusMessage; private set => SetProperty(ref _statusMessage, value); }
 
-    #endregion
-
-    #region Komendy
-
     public ICommand ToggleRunCommand { get; }
     public ICommand StepCommand { get; }
     public ICommand ClearCommand { get; }
@@ -150,8 +144,6 @@ public sealed partial class MainViewModel : ObservableObject
 
     public ICommand EditCellCommand { get; }
     public ICommand EraseCellCommand { get; }
-
-    #endregion
 
     private void ToggleRun()
     {
