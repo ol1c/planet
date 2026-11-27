@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="5.12.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\OptiSync.Shared\**\*.cs" LinkBase="Shared" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OptiSync.Worker.TPL\OptiSync.Worker.TPL.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\OptiSync.Worker.Threads\OptiSync.Worker.Threads.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\data\*.tsp" Link="Data\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <Target Name="CopyWorkerProcesses" AfterTargets="Build">
+    <ItemGroup>
+      <TplWorkerFiles Include="..\OptiSync.Worker.TPL\bin\$(Configuration)\net10.0\**\*.*" />
+      <ThreadsWorkerFiles Include="..\OptiSync.Worker.Threads\bin\$(Configuration)\net10.0\**\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(TplWorkerFiles)" DestinationFiles="@(TplWorkerFiles->'$(OutDir)Workers\TPL\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(ThreadsWorkerFiles)" DestinationFiles="@(ThreadsWorkerFiles->'$(OutDir)Workers\Threads\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>
